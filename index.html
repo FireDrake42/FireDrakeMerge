@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fire Drake Merge</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #222;
+      color: #fff;
+    }
+    #game {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 10px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: #444;
+      border: 2px solid #666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cell img {
+      max-width: 90%;
+      max-height: 90%;
+    }
+    #controls {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      border: none;
+      background: #e63946;
+      color: white;
+    }
+    button:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔥 Fire Drake Merge 🔥</h1>
+  <p>Coins: <span id="coins">20</span></p>
+
+  <div id="game"></div>
+
+  <div id="controls">
+    <button id="buyDrake">Buy Drake (20 coins)</button>
+  </div>
+
+  <script>
+    const gridSize = 3;
+    let coins = 20;
+    const coinDisplay = document.getElementById("coins");
+    const game = document.getElementById("game");
+    const buyBtn = document.getElementById("buyDrake");
+
+    // Create grid cells
+    const cells = [];
+    for (let i = 0; i < gridSize * gridSize; i++) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      game.appendChild(cell);
+      cells.push(cell);
+    }
+
+    // Buy a drake
+    buyBtn.addEventListener("click", () => {
+      if (coins >= 20) {
+        const emptyCell = cells.find(c => c.children.length === 0);
+        if (!emptyCell) {
+          alert("No empty space left on the grid!");
+          return;
+        }
+        coins -= 20;
+        updateCoins();
+
+        const drake = document.createElement("img");
+        drake.src = "/lvl1drake.png";
+        drake.dataset.level = 1;
+        emptyCell.appendChild(drake);
+      } else {
+        alert("Not enough coins!");
+      }
+    });
+
+    // Coin generation loop
+    setInterval(() => {
+      let income = 0;
+      cells.forEach(cell => {
+        if (cell.children.length > 0) {
+          const drake = cell.children[0];
+          if (drake.dataset.level === "1") {
+            income += 0.01;
+          }
+        }
+      });
+      if (income > 0) {
+        coins += income;
+        updateCoins();
+      }
+    }, 1000);
+
+    function updateCoins() {
+      coinDisplay.textContent = coins.toFixed(2);
+      buyBtn.disabled = coins < 20;
+    }
+
+    updateCoins();
+  </script>
+</body>
+</html>
