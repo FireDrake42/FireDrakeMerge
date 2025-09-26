@@ -148,14 +148,16 @@
     let selectedDrake = null; 
     let cells = [];
 
-    // 🔥 Central data for all drakes
+    // 🔥 Central data for all drakes (now up to lvl8)
     const drakeData = {
-      1: { income: 1,  img: "/lvl1drake.png" },
-      2: { income: 3,  img: "/lvl2drake.png" },
-      3: { income: 10, img: "/lvl3drake.png" },
-      4: { income: 25, img: "/lvl4drake.png" }
-      // 👉 Add future levels here, e.g.:
-      // 5: { income: 60, img: "/lvl5drake.png" }
+      1: { income: 1,    img: "/lvl1drake.png" },
+      2: { income: 3,    img: "/lvl2drake.png" },
+      3: { income: 10,   img: "/lvl3drake.png" },
+      4: { income: 25,   img: "/lvl4drake.png" },
+      5: { income: 60,   img: "/lvl5drake.png" },
+      6: { income: 150,  img: "/lvl6drake.png" },
+      7: { income: 400,  img: "/lvl7drake.png" },
+      8: { income: 1000, img: "/lvl8drake.png" }
     };
 
     const expansionCosts = {
@@ -225,7 +227,7 @@
     }
 
     function spawnDrake(cell, level) {
-      if (!drakeData[level]) return; // skip if not defined
+      if (!drakeData[level]) return; 
       const container = document.createElement("div");
       container.classList.add("drake");
 
