@@ -27,10 +27,17 @@
       align-items: center;
       justify-content: center;
     }
-    .cell img {
-      max-width: 90%;
-      max-height: 90%;
+    .drake {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      color: #fff;
       cursor: pointer;
+    }
+    .drake img {
+      max-width: 70px;
+      max-height: 70px;
     }
     .selected {
       outline: 3px solid yellow;
@@ -109,30 +116,42 @@
 
     // Spawn a drake at a cell
     function spawnDrake(cell, level) {
+      const container = document.createElement("div");
+      container.classList.add("drake");
+
       const drake = document.createElement("img");
       drake.dataset.level = level;
       drake.src = level === 1 ? "/lvl1drake.png" : "/lvl2drake.png";
-      drake.addEventListener("click", () => handleDrakeClick(drake));
+
+      const label = document.createElement("span");
+      label.textContent = "lvl" + level;
+
+      container.appendChild(drake);
+      container.appendChild(label);
+
+      container.addEventListener("click", () => handleDrakeClick(container));
       cell.innerHTML = ""; // clear
-      cell.appendChild(drake);
+      cell.appendChild(container);
     }
 
     // Handle selecting & merging drakes
-    function handleDrakeClick(drake) {
+    function handleDrakeClick(container) {
       if (!selectedDrake) {
         // Select this drake
-        selectedDrake = drake;
-        drake.classList.add("selected");
-      } else if (selectedDrake === drake) {
+        selectedDrake = container;
+        container.classList.add("selected");
+      } else if (selectedDrake === container) {
         // Deselect if same drake clicked again
-        drake.classList.remove("selected");
+        container.classList.remove("selected");
         selectedDrake = null;
       } else {
         // Try to merge
-        if (selectedDrake.dataset.level === "1" && drake.dataset.level === "1") {
-          // Merge into lvl2
+        const drake1 = selectedDrake.querySelector("img");
+        const drake2 = container.querySelector("img");
+
+        if (drake1.dataset.level === "1" && drake2.dataset.level === "1") {
           const cell1 = selectedDrake.parentElement;
-          const cell2 = drake.parentElement;
+          const cell2 = container.parentElement;
 
           cell1.innerHTML = "";
           cell2.innerHTML = "";
@@ -152,7 +171,7 @@
       let income = 0;
       cells.forEach(cell => {
         if (cell.children.length > 0) {
-          const drake = cell.children[0];
+          const drake = cell.querySelector("img");
           if (drake.dataset.level === "1") {
             income += 0.01;
           } else if (drake.dataset.level === "2") {
@@ -172,7 +191,7 @@
         coins,
         grid: cells.map(cell => {
           if (cell.children.length > 0) {
-            return cell.children[0].dataset.level;
+            return cell.querySelector("img").dataset.level;
           } else {
             return null;
           }
