@@ -55,7 +55,17 @@
       font-size: 0.8em;
       margin-top: 4px;
       text-shadow: 1px 1px 2px #000;
+      font-weight: bold;
     }
+    /* 🔥 Label colors by level */
+    .lvl1 { color: #ffffff; }   /* white */
+    .lvl2 { color: #00ffcc; }   /* aqua */
+    .lvl3 { color: #33cc33; }   /* green */
+    .lvl4 { color: #ffff33; }   /* yellow */
+    .lvl5 { color: #ff9900; }   /* orange */
+    .lvl6 { color: #ff33cc; }   /* pink */
+    .lvl7 { color: #9999ff; }   /* light purple */
+    .lvl8 { color: #ffd700; }   /* gold */
     #controls {
       margin-top: 20px;
       display: flex;
@@ -131,14 +141,14 @@
     const saveBtn = document.getElementById("saveBtn");
     const prestigeBtn = document.getElementById("prestigeBtn");
 
-    // Expansion costs (coins & ingots)
+    // Expansion costs
     const expansionCosts = {
       3: { coins: 1000, ingots: 1 },
       4: { coins: 10000, ingots: 5 },
       5: { coins: 100000, ingots: 20 }
     };
 
-    // Drake data for levels
+    // Drake levels
     const drakeData = {
       1: { income: 1,   img: "/lvl1drake.png" },
       2: { income: 3,   img: "/lvl2drake.png" },
@@ -174,7 +184,7 @@
     }
 
     function spawnDrake(cell, level) {
-      if (!drakeData[level]) return; 
+      if (!drakeData[level]) return;
       const container = document.createElement("div");
       container.classList.add("drake");
 
@@ -183,6 +193,7 @@
       drake.src = drakeData[level].img;
 
       const label = document.createElement("span");
+      label.classList.add(`lvl${level}`);
       label.textContent = `lvl${level} (+${drakeData[level].income}/s)`;
 
       container.appendChild(drake);
