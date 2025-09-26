@@ -167,10 +167,12 @@
       5: { coins: 100000, ingots: 5 }
     };
 
-    // number formatter (K/M with 2 decimals, trims extra zeros)
+    // number formatter (K/M/B with 2 decimals, trims extra zeros)
     function formatNumber(num) {
-      if (num >= 1000000) {
-        return (num / 1000000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "M";
+      if (num >= 1_000_000_000) {
+        return (num / 1_000_000_000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "B";
+      } else if (num >= 1_000_000) {
+        return (num / 1_000_000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "M";
       } else if (num >= 1000) {
         return (num / 1000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "K";
       } else {
