@@ -87,16 +87,14 @@
     const expandBtn = document.getElementById("expandGrid");
     const saveBtn = document.getElementById("saveGame");
 
-    let selectedDrake = null; // for merging
+    let selectedDrake = null; 
     let cells = [];
 
-    // Income values per level
     const incomeValues = {
-      1: 1,   // lvl1 → 1 coin/sec
-      2: 3    // lvl2 → 3 coins/sec
+      1: 1,  
+      2: 3   
     };
 
-    // Create grid
     function createGrid(size) {
       game.innerHTML = "";
       game.style.gridTemplateColumns = `repeat(${size}, 100px)`;
@@ -110,7 +108,6 @@
       }
     }
 
-    // Update coin display
     function updateCoins() {
       coinDisplay.textContent = Math.floor(coins);
       buyBtn.disabled = coins < 20;
@@ -118,7 +115,6 @@
       expandBtn.disabled = coins < 1000 || gridSize === 4;
     }
 
-    // Update passive income display
     function updateIncome() {
       let income = 0;
       cells.forEach(cell => {
@@ -132,7 +128,6 @@
       return income;
     }
 
-    // Buy a lvl1 drake
     buyBtn.addEventListener("click", () => {
       if (coins >= 20) {
         const emptyCell = cells.find(c => c.children.length === 0);
@@ -146,7 +141,6 @@
       }
     });
 
-    // Buy an ingot
     ingotBtn.addEventListener("click", () => {
       if (coins >= 1000) {
         coins -= 1000;
@@ -155,18 +149,37 @@
       }
     });
 
-    // Expand grid to 4x4
+    // FIXED: Preserve drakes when expanding
     expandBtn.addEventListener("click", () => {
       if (coins >= 1000 && gridSize === 3) {
         coins -= 1000;
         gridSize = 4;
+
+        // Save drakes before expansion
+        const currentDrakes = cells.map(cell => {
+          if (cell.children.length > 0) {
+            return cell.querySelector("img").dataset.level;
+          } else {
+            return null;
+          }
+        });
+
+        // Recreate larger grid
         createGrid(gridSize);
+
+        // Restore drakes into new grid
+        currentDrakes.forEach((level, i) => {
+          if (level && i < cells.length) {
+            spawnDrake(cells[i], parseInt(level));
+          }
+        });
+
         updateCoins();
+        updateIncome();
         alert("Grid expanded to 4x4!");
       }
     });
 
-    // Spawn a drake at a cell
     function spawnDrake(cell, level) {
       const container = document.createElement("div");
       container.classList.add("drake");
@@ -188,7 +201,6 @@
       updateIncome();
     }
 
-    // Handle selecting & merging drakes
     function handleDrakeClick(container) {
       if (!selectedDrake) {
         selectedDrake = container;
@@ -216,7 +228,6 @@
       }
     }
 
-    // Coin generation loop
     setInterval(() => {
       const income = updateIncome();
       if (income > 0) {
@@ -225,7 +236,6 @@
       }
     }, 1000);
 
-    // Save game
     saveBtn.addEventListener("click", () => {
       const saveData = {
         coins,
@@ -242,7 +252,6 @@
       alert("Game saved!");
     });
 
-    // Load game
     function loadGame() {
       const saveData = JSON.parse(localStorage.getItem("fireDrakeSave"));
       if (saveData) {
@@ -261,7 +270,6 @@
       }
     }
 
-    // Start
     loadGame();
     updateCoins();
     updateIncome();
