@@ -21,13 +21,14 @@
       margin-top: 10px;
       font-size: 18px;
     }
-    #coins, #income, #ingots {
+    #coins, #income, #ingots, #multiplier {
       font-weight: bold;
       text-shadow: 1px 1px 3px black;
     }
     #coins { color: #ffeb3b; }
     #ingots { color: #ffd700; }
     #income { color: #7fff00; }
+    #multiplier { color: #00e5ff; }
 
     #game {
       display: grid;
@@ -112,7 +113,8 @@
   <div id="stats">
     Coins: <span id="coins">20</span> | 
     Ingots: <span id="ingots">0</span> | 
-    Passive Income: <span id="income">0</span>/sec
+    Passive Income: <span id="income">0</span>/sec <br>
+    Prestige Multiplier: <span id="multiplier">1x</span>
   </div>
 
   <div id="game"></div>
@@ -135,6 +137,7 @@
     const coinDisplay = document.getElementById("coins");
     const ingotDisplay = document.getElementById("ingots");
     const incomeDisplay = document.getElementById("income");
+    const multiplierDisplay = document.getElementById("multiplier");
     const game = document.getElementById("game");
     const buyBtn = document.getElementById("buyDrake");
     const ingotBtn = document.getElementById("buyIngot");
@@ -180,6 +183,7 @@
     function updateStats() {
       coinDisplay.textContent = formatNumber(coins);
       ingotDisplay.textContent = formatNumber(ingots);
+      multiplierDisplay.textContent = multiplier + "x";
       buyBtn.textContent = `Buy Drake (${formatNumber(drakeCost)} coins)`;
       buyBtn.disabled = coins < drakeCost;
       ingotBtn.textContent = `Buy Ingot (${formatNumber(1000)} coins)`;
