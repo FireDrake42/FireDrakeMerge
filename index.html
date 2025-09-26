@@ -65,7 +65,7 @@
 <body>
   <h1>🔥 Fire Drake Merge 🔥</h1>
   <p>Coins: <span id="coins">20</span></p>
-  <p>Passive Income: <span id="income">0.00</span> coins/sec</p>
+  <p>Passive Income: <span id="income">0</span> coins/sec</p>
 
   <div id="game"></div>
 
@@ -102,7 +102,7 @@
 
     // Update coin display
     function updateCoins() {
-      coinDisplay.textContent = coins.toFixed(2);
+      coinDisplay.textContent = Math.floor(coins);
       buyBtn.disabled = coins < 20;
     }
 
@@ -116,7 +116,7 @@
           income += incomeValues[lvl] || 0;
         }
       });
-      incomeDisplay.textContent = income.toFixed(2);
+      incomeDisplay.textContent = income;
       return income;
     }
 
