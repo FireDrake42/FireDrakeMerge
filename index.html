@@ -119,6 +119,7 @@
     <button id="expandBtn">Expand Grid</button>
     <button id="saveBtn">Save Progress</button>
     <button id="prestigeBtn">Prestige (1M coins)</button>
+    <button id="deleteBtn">❌ Delete Progress</button>
   </div>
 
   <script>
@@ -140,6 +141,7 @@
     const expandBtn = document.getElementById("expandBtn");
     const saveBtn = document.getElementById("saveBtn");
     const prestigeBtn = document.getElementById("prestigeBtn");
+    const deleteBtn = document.getElementById("deleteBtn");
 
     // Expansion costs
     const expansionCosts = {
@@ -335,6 +337,23 @@
         updateCoins();
         updateIncome();
         alert("Prestiged! Coin multiplier doubled.");
+      }
+    });
+
+    // Delete progress
+    deleteBtn.addEventListener("click", () => {
+      if (confirm("Are you sure you want to delete all progress? This cannot be undone!")) {
+        localStorage.removeItem("fireDrakeSave");
+        coins = 20;
+        ingots = 0;
+        gridSize = 3;
+        drakeCost = 20;
+        coinMultiplier = 1;
+        multiplierDisplay.textContent = "1x";
+        createGrid(gridSize);
+        updateCoins();
+        updateIncome();
+        alert("All progress deleted. Starting fresh!");
       }
     });
 
