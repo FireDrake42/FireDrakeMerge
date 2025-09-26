@@ -30,6 +30,11 @@
     .cell img {
       max-width: 90%;
       max-height: 90%;
+      cursor: pointer;
+    }
+    .selected {
+      outline: 3px solid yellow;
+      border-radius: 6px;
     }
     #controls {
       margin-top: 20px;
@@ -40,6 +45,7 @@
       cursor: pointer;
       border-radius: 8px;
       border: none;
+      margin: 5px;
       background: #e63946;
       color: white;
     }
@@ -57,6 +63,7 @@
 
   <div id="controls">
     <button id="buyDrake">Buy Drake (20 coins)</button>
+    <button id="saveGame">Save Progress</button>
   </div>
 
   <script>
@@ -65,6 +72,9 @@
     const coinDisplay = document.getElementById("coins");
     const game = document.getElementById("game");
     const buyBtn = document.getElementById("buyDrake");
+    const saveBtn = document.getElementById("saveGame");
+
+    let selectedDrake = null; // for merging
 
     // Create grid cells
     const cells = [];
@@ -75,7 +85,13 @@
       cells.push(cell);
     }
 
-    // Buy a drake
+    // Update coin display
+    function updateCoins() {
+      coinDisplay.textContent = coins.toFixed(2);
+      buyBtn.disabled = coins < 20;
+    }
+
+    // Buy a lvl1 drake
     buyBtn.addEventListener("click", () => {
       if (coins >= 20) {
         const emptyCell = cells.find(c => c.children.length === 0);
@@ -85,15 +101,51 @@
         }
         coins -= 20;
         updateCoins();
-
-        const drake = document.createElement("img");
-        drake.src = "/lvl1drake.png";
-        drake.dataset.level = 1;
-        emptyCell.appendChild(drake);
+        spawnDrake(emptyCell, 1);
       } else {
         alert("Not enough coins!");
       }
     });
+
+    // Spawn a drake at a cell
+    function spawnDrake(cell, level) {
+      const drake = document.createElement("img");
+      drake.dataset.level = level;
+      drake.src = level === 1 ? "/lvl1drake.png" : "/lvl2drake.png";
+      drake.addEventListener("click", () => handleDrakeClick(drake));
+      cell.innerHTML = ""; // clear
+      cell.appendChild(drake);
+    }
+
+    // Handle selecting & merging drakes
+    function handleDrakeClick(drake) {
+      if (!selectedDrake) {
+        // Select this drake
+        selectedDrake = drake;
+        drake.classList.add("selected");
+      } else if (selectedDrake === drake) {
+        // Deselect if same drake clicked again
+        drake.classList.remove("selected");
+        selectedDrake = null;
+      } else {
+        // Try to merge
+        if (selectedDrake.dataset.level === "1" && drake.dataset.level === "1") {
+          // Merge into lvl2
+          const cell1 = selectedDrake.parentElement;
+          const cell2 = drake.parentElement;
+
+          cell1.innerHTML = "";
+          cell2.innerHTML = "";
+          spawnDrake(cell1, 2); // place lvl2 drake
+
+          selectedDrake = null;
+        } else {
+          // Reset selection if merge not possible
+          selectedDrake.classList.remove("selected");
+          selectedDrake = null;
+        }
+      }
+    }
 
     // Coin generation loop
     setInterval(() => {
@@ -103,6 +155,8 @@
           const drake = cell.children[0];
           if (drake.dataset.level === "1") {
             income += 0.01;
+          } else if (drake.dataset.level === "2") {
+            income += 0.05; // example: lvl2 earns more
           }
         }
       });
@@ -112,11 +166,39 @@
       }
     }, 1000);
 
-    function updateCoins() {
-      coinDisplay.textContent = coins.toFixed(2);
-      buyBtn.disabled = coins < 20;
+    // Save game
+    saveBtn.addEventListener("click", () => {
+      const saveData = {
+        coins,
+        grid: cells.map(cell => {
+          if (cell.children.length > 0) {
+            return cell.children[0].dataset.level;
+          } else {
+            return null;
+          }
+        })
+      };
+      localStorage.setItem("fireDrakeSave", JSON.stringify(saveData));
+      alert("Game saved!");
+    });
+
+    // Load game if save exists
+    function loadGame() {
+      const saveData = JSON.parse(localStorage.getItem("fireDrakeSave"));
+      if (saveData) {
+        coins = saveData.coins;
+        saveData.grid.forEach((level, i) => {
+          cells[i].innerHTML = "";
+          if (level) {
+            spawnDrake(cells[i], parseInt(level));
+          }
+        });
+        updateCoins();
+      }
     }
 
+    // Start
+    loadGame();
     updateCoins();
   </script>
 </body>
