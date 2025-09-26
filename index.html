@@ -92,14 +92,14 @@
 
     /* Themed button colors */
     #buyDrake {
-      background: #28a745; /* green */
+      background: #28a745;
     }
     #buyDrake:hover:not(:disabled) {
       background: #218838;
     }
 
     #buyIngot {
-      background: #f1c40f; /* gold */
+      background: #f1c40f;
       color: #222;
       font-weight: bold;
     }
@@ -108,14 +108,14 @@
     }
 
     #expandGrid {
-      background: #3498db; /* blue */
+      background: #3498db;
     }
     #expandGrid:hover:not(:disabled) {
       background: #217dbb;
     }
 
     #saveGame {
-      background: #e74c3c; /* red */
+      background: #e74c3c;
     }
     #saveGame:hover:not(:disabled) {
       background: #c0392b;
@@ -167,11 +167,12 @@
       5: { coins: 100000, ingots: 5 }
     };
 
+    // number formatter (K/M with 2 decimals, trims extra zeros)
     function formatNumber(num) {
       if (num >= 1000000) {
-        return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+        return (num / 1000000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "M";
       } else if (num >= 1000) {
-        return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+        return (num / 1000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "K";
       } else {
         return Math.floor(num).toString();
       }
