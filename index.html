@@ -71,19 +71,24 @@
 
   <div id="controls">
     <button id="buyDrake">Buy Drake (20 coins)</button>
+    <button id="buyIngot">Buy Ingot (1000 coins)</button>
+    <button id="expandGrid">Expand Grid to 4x4 (1000 coins)</button>
     <button id="saveGame">Save Progress</button>
   </div>
 
   <script>
-    const gridSize = 3;
+    let gridSize = 3;
     let coins = 20;
     const coinDisplay = document.getElementById("coins");
     const incomeDisplay = document.getElementById("income");
     const game = document.getElementById("game");
     const buyBtn = document.getElementById("buyDrake");
+    const ingotBtn = document.getElementById("buyIngot");
+    const expandBtn = document.getElementById("expandGrid");
     const saveBtn = document.getElementById("saveGame");
 
     let selectedDrake = null; // for merging
+    let cells = [];
 
     // Income values per level
     const incomeValues = {
@@ -91,19 +96,26 @@
       2: 3    // lvl2 → 3 coins/sec
     };
 
-    // Create grid cells
-    const cells = [];
-    for (let i = 0; i < gridSize * gridSize; i++) {
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
-      game.appendChild(cell);
-      cells.push(cell);
+    // Create grid
+    function createGrid(size) {
+      game.innerHTML = "";
+      game.style.gridTemplateColumns = `repeat(${size}, 100px)`;
+      game.style.gridTemplateRows = `repeat(${size}, 100px)`;
+      cells = [];
+      for (let i = 0; i < size * size; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        game.appendChild(cell);
+        cells.push(cell);
+      }
     }
 
     // Update coin display
     function updateCoins() {
       coinDisplay.textContent = Math.floor(coins);
       buyBtn.disabled = coins < 20;
+      ingotBtn.disabled = coins < 1000;
+      expandBtn.disabled = coins < 1000 || gridSize === 4;
     }
 
     // Update passive income display
@@ -131,8 +143,26 @@
         coins -= 20;
         updateCoins();
         spawnDrake(emptyCell, 1);
-      } else {
-        alert("Not enough coins!");
+      }
+    });
+
+    // Buy an ingot
+    ingotBtn.addEventListener("click", () => {
+      if (coins >= 1000) {
+        coins -= 1000;
+        updateCoins();
+        alert("You bought an Ingot! (Feature coming soon 🔨)");
+      }
+    });
+
+    // Expand grid to 4x4
+    expandBtn.addEventListener("click", () => {
+      if (coins >= 1000 && gridSize === 3) {
+        coins -= 1000;
+        gridSize = 4;
+        createGrid(gridSize);
+        updateCoins();
+        alert("Grid expanded to 4x4!");
       }
     });
 
@@ -152,7 +182,7 @@
       container.appendChild(label);
 
       container.addEventListener("click", () => handleDrakeClick(container));
-      cell.innerHTML = ""; // clear
+      cell.innerHTML = "";
       cell.appendChild(container);
 
       updateIncome();
@@ -161,15 +191,12 @@
     // Handle selecting & merging drakes
     function handleDrakeClick(container) {
       if (!selectedDrake) {
-        // Select this drake
         selectedDrake = container;
         container.classList.add("selected");
       } else if (selectedDrake === container) {
-        // Deselect if same drake clicked again
         container.classList.remove("selected");
         selectedDrake = null;
       } else {
-        // Try to merge
         const drake1 = selectedDrake.querySelector("img");
         const drake2 = container.querySelector("img");
 
@@ -179,11 +206,10 @@
 
           cell1.innerHTML = "";
           cell2.innerHTML = "";
-          spawnDrake(cell1, 2); // place lvl2 drake
+          spawnDrake(cell1, 2);
 
           selectedDrake = null;
         } else {
-          // Reset selection if merge not possible
           selectedDrake.classList.remove("selected");
           selectedDrake = null;
         }
@@ -203,6 +229,7 @@
     saveBtn.addEventListener("click", () => {
       const saveData = {
         coins,
+        gridSize,
         grid: cells.map(cell => {
           if (cell.children.length > 0) {
             return cell.querySelector("img").dataset.level;
@@ -215,19 +242,22 @@
       alert("Game saved!");
     });
 
-    // Load game if save exists
+    // Load game
     function loadGame() {
       const saveData = JSON.parse(localStorage.getItem("fireDrakeSave"));
       if (saveData) {
         coins = saveData.coins;
+        gridSize = saveData.gridSize || 3;
+        createGrid(gridSize);
         saveData.grid.forEach((level, i) => {
-          cells[i].innerHTML = "";
           if (level) {
             spawnDrake(cells[i], parseInt(level));
           }
         });
         updateCoins();
         updateIncome();
+      } else {
+        createGrid(gridSize);
       }
     }
 
