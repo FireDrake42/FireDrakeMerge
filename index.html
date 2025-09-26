@@ -213,7 +213,7 @@
       if (coins >= drakeCost) {
         coins -= drakeCost;
         spawnDrake(emptyCell, 1);
-        drakeCost = Math.floor(drakeCost * 1.5); // 50% increase
+        drakeCost = Math.floor(drakeCost * 1.25); // 25% increase ✅
         updateCoins();
         updateBuyButton();
       } else {
