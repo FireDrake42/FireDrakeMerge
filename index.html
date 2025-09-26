@@ -65,6 +65,7 @@
 <body>
   <h1>🔥 Fire Drake Merge 🔥</h1>
   <p>Coins: <span id="coins">20</span></p>
+  <p>Passive Income: <span id="income">0.00</span> coins/sec</p>
 
   <div id="game"></div>
 
@@ -77,11 +78,19 @@
     const gridSize = 3;
     let coins = 20;
     const coinDisplay = document.getElementById("coins");
+    const incomeDisplay = document.getElementById("income");
     const game = document.getElementById("game");
     const buyBtn = document.getElementById("buyDrake");
     const saveBtn = document.getElementById("saveGame");
 
     let selectedDrake = null; // for merging
+
+    // Income values per level
+    const incomeValues = {
+      1: 0.01,
+      2: 0.05,
+      // add more levels later if needed
+    };
 
     // Create grid cells
     const cells = [];
@@ -96,6 +105,20 @@
     function updateCoins() {
       coinDisplay.textContent = coins.toFixed(2);
       buyBtn.disabled = coins < 20;
+    }
+
+    // Update passive income display
+    function updateIncome() {
+      let income = 0;
+      cells.forEach(cell => {
+        if (cell.children.length > 0) {
+          const drake = cell.querySelector("img");
+          const lvl = parseInt(drake.dataset.level);
+          income += incomeValues[lvl] || 0;
+        }
+      });
+      incomeDisplay.textContent = income.toFixed(2);
+      return income;
     }
 
     // Buy a lvl1 drake
@@ -132,6 +155,8 @@
       container.addEventListener("click", () => handleDrakeClick(container));
       cell.innerHTML = ""; // clear
       cell.appendChild(container);
+
+      updateIncome();
     }
 
     // Handle selecting & merging drakes
@@ -168,17 +193,7 @@
 
     // Coin generation loop
     setInterval(() => {
-      let income = 0;
-      cells.forEach(cell => {
-        if (cell.children.length > 0) {
-          const drake = cell.querySelector("img");
-          if (drake.dataset.level === "1") {
-            income += 0.01;
-          } else if (drake.dataset.level === "2") {
-            income += 0.05; // example: lvl2 earns more
-          }
-        }
-      });
+      const income = updateIncome();
       if (income > 0) {
         coins += income;
         updateCoins();
@@ -213,12 +228,14 @@
           }
         });
         updateCoins();
+        updateIncome();
       }
     }
 
     // Start
     loadGame();
     updateCoins();
+    updateIncome();
   </script>
 </body>
 </html>
