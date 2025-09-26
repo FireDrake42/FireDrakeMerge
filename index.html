@@ -132,7 +132,7 @@
     let coins = 20;
     let ingots = 0;
     let drakeCost = 20;
-    let multiplier = 1; // prestige multiplier
+    let multiplier = 1; 
 
     const coinDisplay = document.getElementById("coins");
     const ingotDisplay = document.getElementById("ingots");
@@ -148,7 +148,9 @@
     let selectedDrake = null; 
     let cells = [];
 
-    const incomeValues = { 1: 1, 2: 3, 3: 10 };
+    // incomes for each level
+    const incomeValues = { 1: 1, 2: 3, 3: 10, 4: 25 };
+
     const expansionCosts = {
       3: { coins: 1000, ingots: 1 },
       4: { coins: 10000, ingots: 2 },
@@ -224,6 +226,7 @@
       if (level === 1) drake.src = "/lvl1drake.png";
       else if (level === 2) drake.src = "/lvl2drake.png";
       else if (level === 3) drake.src = "/lvl3drake.png";
+      else if (level === 4) drake.src = "/lvl4drake.png";
 
       const label = document.createElement("span");
       label.textContent = "lvl" + level;
