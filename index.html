@@ -26,7 +26,7 @@
     .cell {
       width: 80px;
       height: 80px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.4); /* darker for bloody theme */
       border: 1px solid #fff;
       display: flex;
       align-items: center;
@@ -103,6 +103,7 @@
     const incomeDisplay = document.getElementById("income");
     const multiplierDisplay = document.getElementById("multiplier");
     const grid = document.getElementById("grid");
+    const buyBtn = document.getElementById("buyBtn");
 
     const drakeData = {
       1: { income: 1,   img: "/lvl1drake.png" },
@@ -147,6 +148,10 @@
         totalIncome += drakeData[level].income;
       });
       incomeDisplay.textContent = formatNumber(totalIncome * coinMultiplier);
+    }
+
+    function updateBuyButton() {
+      buyBtn.textContent = `Buy Drake (${formatNumber(drakeCost)})`;
     }
 
     function spawnDrake(cell, level) {
@@ -197,14 +202,22 @@
       }
     }
 
-    // Buttons
-    document.getElementById("buyBtn").addEventListener("click", () => {
+    // --- Buttons ---
+    buyBtn.addEventListener("click", () => {
+      const emptyCell = [...document.querySelectorAll(".cell")].find(cell => cell.children.length === 0);
+      if (!emptyCell) {
+        alert("No space left! Expand your grid first.");
+        return;
+      }
+
       if (coins >= drakeCost) {
         coins -= drakeCost;
+        spawnDrake(emptyCell, 1);
         drakeCost = Math.floor(drakeCost * 1.5); // 50% increase
         updateCoins();
-        const emptyCell = [...document.querySelectorAll(".cell")].find(cell => cell.children.length === 0);
-        if (emptyCell) spawnDrake(emptyCell, 1);
+        updateBuyButton();
+      } else {
+        alert("Not enough coins!");
       }
     });
 
@@ -253,6 +266,7 @@
           createGrid(gridSize);
           updateCoins();
           updateIncome();
+          updateBuyButton();
         }
       }
     });
@@ -269,6 +283,7 @@
         createGrid(gridSize);
         updateCoins();
         updateIncome();
+        updateBuyButton();
         alert("All progress deleted. Starting fresh!");
       }
     });
@@ -283,7 +298,7 @@
       updateCoins();
     }, 1000);
 
-    // Load game
+    // --- Load game ---
     window.onload = () => {
       const saveData = JSON.parse(localStorage.getItem("fireDrakeSave"));
       if (saveData) {
@@ -299,10 +314,12 @@
         });
         updateCoins();
         updateIncome();
+        updateBuyButton();
       } else {
         createGrid(gridSize);
         updateCoins();
         updateIncome();
+        updateBuyButton();
       }
     };
   </script>
