@@ -148,8 +148,15 @@
     let selectedDrake = null; 
     let cells = [];
 
-    // incomes for each level
-    const incomeValues = { 1: 1, 2: 3, 3: 10, 4: 25 };
+    // 🔥 Central data for all drakes
+    const drakeData = {
+      1: { income: 1,  img: "/lvl1drake.png" },
+      2: { income: 3,  img: "/lvl2drake.png" },
+      3: { income: 10, img: "/lvl3drake.png" },
+      4: { income: 25, img: "/lvl4drake.png" }
+      // 👉 Add future levels here, e.g.:
+      // 5: { income: 60, img: "/lvl5drake.png" }
+    };
 
     const expansionCosts = {
       3: { coins: 1000, ingots: 1 },
@@ -210,7 +217,7 @@
         if (cell.children.length > 0) {
           const drake = cell.querySelector("img");
           const lvl = parseInt(drake.dataset.level);
-          income += incomeValues[lvl] || 0;
+          if (drakeData[lvl]) income += drakeData[lvl].income;
         }
       });
       incomeDisplay.textContent = formatNumber(income * multiplier);
@@ -218,15 +225,13 @@
     }
 
     function spawnDrake(cell, level) {
+      if (!drakeData[level]) return; // skip if not defined
       const container = document.createElement("div");
       container.classList.add("drake");
 
       const drake = document.createElement("img");
       drake.dataset.level = level;
-      if (level === 1) drake.src = "/lvl1drake.png";
-      else if (level === 2) drake.src = "/lvl2drake.png";
-      else if (level === 3) drake.src = "/lvl3drake.png";
-      else if (level === 4) drake.src = "/lvl4drake.png";
+      drake.src = drakeData[level].img;
 
       const label = document.createElement("span");
       label.textContent = "lvl" + level;
