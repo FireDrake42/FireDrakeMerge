@@ -6,119 +6,87 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: red; /* 🔥 solid red background */
+      background: linear-gradient(135deg, #660000, #990000, #330000); /* 🔥 bloody red */
+      background-attachment: fixed;
       color: #fff;
       text-align: center;
       margin: 0;
       padding: 0;
     }
-    h1 {
-      margin-top: 20px;
-      font-size: 2em;
-      text-shadow: 2px 2px 4px #000;
-    }
     #stats {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin: 20px 0;
-      font-size: 1.2em;
+      margin: 20px;
+      font-size: 20px;
     }
     #grid {
       display: grid;
-      gap: 8px;
+      gap: 5px;
       justify-content: center;
       margin: 20px auto;
     }
     .cell {
-      width: 90px;
-      height: 90px;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid #fff;
-      border-radius: 10px;
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #fff;
       display: flex;
+      align-items: center;
       justify-content: center;
-      align-items: center;
-      cursor: pointer;
-    }
-    .drake {
-      display: flex;
+      position: relative;
       flex-direction: column;
-      align-items: center;
     }
-    .drake img {
-      width: 70px;
-      height: 70px;
-      pointer-events: none;
+    .cell img {
+      max-width: 60px;
+      max-height: 60px;
     }
     .drake span {
-      font-size: 0.8em;
-      margin-top: 4px;
-      text-shadow: 1px 1px 2px #000;
-      font-weight: bold;
+      font-size: 12px;
+      color: yellow;
+      margin-top: 2px;
     }
-    /* 🔥 Label colors by level */
-    .lvl1 { color: #ffffff; }   /* white */
-    .lvl2 { color: #00ffcc; }   /* aqua */
-    .lvl3 { color: #33cc33; }   /* green */
-    .lvl4 { color: #ffff33; }   /* yellow */
-    .lvl5 { color: #ff9900; }   /* orange */
-    .lvl6 { color: #ff33cc; }   /* pink */
-    .lvl7 { color: #9999ff; }   /* light purple */
-    .lvl8 { color: #ffd700; }   /* gold */
+    .selected {
+      outline: 3px solid yellow;
+    }
     #controls {
       margin-top: 20px;
       display: flex;
-      flex-direction: column; /* vertical layout */
+      flex-direction: column; /* buttons stacked */
       align-items: center;
       gap: 10px;
     }
     button {
-      padding: 12px 20px;
-      font-size: 1em;
+      padding: 10px 20px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      background: #fff;
-      color: #ff4d4d;
-      font-weight: bold;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
-      transition: transform 0.1s, background 0.2s;
-      width: 220px;
+      font-size: 16px;
+      transition: transform 0.2s;
     }
     button:hover {
       transform: scale(1.05);
-      background: #ffe6e6;
     }
-    button:disabled {
-      background: #999;
-      color: #555;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .selected {
-      border: 3px solid yellow !important;
-    }
+    #buyBtn { background: orange; }
+    #ingotBtn { background: gold; }
+    #expandBtn { background: lightgreen; }
+    #saveBtn { background: lightblue; }
+    #prestigeBtn { background: violet; }
+    #deleteBtn { background: crimson; color: #fff; }
   </style>
 </head>
 <body>
   <h1>🔥 Fire Drake Merge 🔥</h1>
-
   <div id="stats">
-    <div>Coins: <span id="coins">0</span></div>
-    <div>Ingots: <span id="ingots">0</span></div>
-    <div>Income/sec: <span id="income">0</span></div>
-    <div>Multiplier: <span id="multiplier">1x</span></div>
+    Coins: <span id="coins">20</span> | 
+    Ingots: <span id="ingots">0</span> | 
+    Passive Income: <span id="income">0</span>/s | 
+    Multiplier: <span id="multiplier">1x</span>
   </div>
-
   <div id="grid"></div>
-
   <div id="controls">
-    <button id="buyBtn">Buy Drake (20 coins)</button>
-    <button id="ingotBtn">Buy Ingot (1K coins)</button>
-    <button id="expandBtn">Expand Grid</button>
+    <button id="buyBtn">Buy Drake</button>
+    <button id="ingotBtn">Buy Ingot (1K)</button>
+    <button id="expandBtn">Expand Grid (1K coins + 1 ingot)</button>
     <button id="saveBtn">Save Progress</button>
-    <button id="prestigeBtn">Prestige (1M coins)</button>
+    <button id="prestigeBtn">💎 Prestige (1M coins)</button>
     <button id="deleteBtn">❌ Delete Progress</button>
   </div>
 
@@ -126,31 +94,16 @@
     let coins = 20;
     let ingots = 0;
     let gridSize = 3;
-    let cells = [];
+    let drakeCost = 20;
     let selectedDrake = null;
     let coinMultiplier = 1;
-    let drakeCost = 20;
 
-    const coinDisplay = document.getElementById("coins");
-    const ingotDisplay = document.getElementById("ingots");
+    const coinsDisplay = document.getElementById("coins");
+    const ingotsDisplay = document.getElementById("ingots");
     const incomeDisplay = document.getElementById("income");
     const multiplierDisplay = document.getElementById("multiplier");
     const grid = document.getElementById("grid");
-    const buyBtn = document.getElementById("buyBtn");
-    const ingotBtn = document.getElementById("ingotBtn");
-    const expandBtn = document.getElementById("expandBtn");
-    const saveBtn = document.getElementById("saveBtn");
-    const prestigeBtn = document.getElementById("prestigeBtn");
-    const deleteBtn = document.getElementById("deleteBtn");
 
-    // Expansion costs
-    const expansionCosts = {
-      3: { coins: 1000, ingots: 1 },
-      4: { coins: 10000, ingots: 5 },
-      5: { coins: 100000, ingots: 20 }
-    };
-
-    // Drake levels
     const drakeData = {
       1: { income: 1,   img: "/lvl1drake.png" },
       2: { income: 3,   img: "/lvl2drake.png" },
@@ -174,19 +127,30 @@
 
     function createGrid(size) {
       grid.innerHTML = "";
-      grid.style.gridTemplateColumns = `repeat(${size}, 90px)`;
-      grid.style.gridTemplateRows = `repeat(${size}, 90px)`;
-      cells = [];
+      grid.style.gridTemplateColumns = `repeat(${size}, 80px)`;
       for (let i = 0; i < size * size; i++) {
         const cell = document.createElement("div");
         cell.classList.add("cell");
-        cells.push(cell);
         grid.appendChild(cell);
       }
     }
 
+    function updateCoins() {
+      coinsDisplay.textContent = formatNumber(coins);
+      ingotsDisplay.textContent = formatNumber(ingots);
+    }
+
+    function updateIncome() {
+      let totalIncome = 0;
+      document.querySelectorAll(".drake img").forEach(drake => {
+        const level = drake.dataset.level;
+        totalIncome += drakeData[level].income;
+      });
+      incomeDisplay.textContent = formatNumber(totalIncome * coinMultiplier);
+    }
+
     function spawnDrake(cell, level) {
-      if (!drakeData[level]) return;
+      if (!drakeData[level]) return; 
       const container = document.createElement("div");
       container.classList.add("drake");
 
@@ -195,7 +159,6 @@
       drake.src = drakeData[level].img;
 
       const label = document.createElement("span");
-      label.classList.add(`lvl${level}`);
       label.textContent = `lvl${level} (+${drakeData[level].income}/s)`;
 
       container.appendChild(drake);
@@ -223,72 +186,29 @@
           const newLevel = parseInt(drake1.dataset.level) + 1;
           const cell1 = selectedDrake.parentElement;
           const cell2 = container.parentElement;
-
           cell1.innerHTML = "";
           cell2.innerHTML = "";
-
           spawnDrake(cell1, newLevel);
+          selectedDrake = null;
+        } else {
+          selectedDrake.classList.remove("selected");
+          selectedDrake = null;
         }
-        selectedDrake.classList.remove("selected");
-        selectedDrake = null;
       }
     }
 
-    function updateCoins() {
-      coinDisplay.textContent = formatNumber(coins);
-      ingotDisplay.textContent = formatNumber(ingots);
-      buyBtn.textContent = `Buy Drake (${formatNumber(drakeCost)} coins)`;
-      buyBtn.disabled = coins < drakeCost;
-      ingotBtn.disabled = coins < 1000;
-
-      if (expansionCosts[gridSize]) {
-        const cost = expansionCosts[gridSize];
-        expandBtn.textContent = `Expand Grid to ${gridSize+1}x${gridSize+1} (${formatNumber(cost.coins)} & ${formatNumber(cost.ingots)} ingots)`;
-        expandBtn.disabled = coins < cost.coins || ingots < cost.ingots;
-      } else {
-        expandBtn.textContent = "Max Grid Reached";
-        expandBtn.disabled = true;
-      }
-
-      prestigeBtn.disabled = coins < 1000000;
-    }
-
-    function updateIncome() {
-      let totalIncome = 0;
-      cells.forEach(cell => {
-        const drake = cell.querySelector("img");
-        if (drake) {
-          const level = parseInt(drake.dataset.level);
-          totalIncome += drakeData[level]?.income || 0;
-        }
-      });
-      totalIncome *= coinMultiplier;
-      incomeDisplay.textContent = formatNumber(totalIncome);
-      return totalIncome;
-    }
-
-    setInterval(() => {
-      coins += updateIncome();
-      updateCoins();
-    }, 1000);
-
-    // Buy drake
-    buyBtn.addEventListener("click", () => {
+    // Buttons
+    document.getElementById("buyBtn").addEventListener("click", () => {
       if (coins >= drakeCost) {
-        const empty = cells.find(cell => cell.children.length === 0);
-        if (!empty) {
-          alert("No empty space!");
-          return;
-        }
         coins -= drakeCost;
-        drakeCost = Math.floor(drakeCost * 1.5);
-        spawnDrake(empty, 1);
+        drakeCost = Math.floor(drakeCost * 1.5); // 50% increase
         updateCoins();
+        const emptyCell = [...document.querySelectorAll(".cell")].find(cell => cell.children.length === 0);
+        if (emptyCell) spawnDrake(emptyCell, 1);
       }
     });
 
-    // Buy ingot
-    ingotBtn.addEventListener("click", () => {
+    document.getElementById("ingotBtn").addEventListener("click", () => {
       if (coins >= 1000) {
         coins -= 1000;
         ingots++;
@@ -296,52 +216,48 @@
       }
     });
 
-    // Expand grid
-    expandBtn.addEventListener("click", () => {
-      if (expansionCosts[gridSize]) {
-        const cost = expansionCosts[gridSize];
-        if (coins >= cost.coins && ingots >= cost.ingots) {
-          coins -= cost.coins;
-          ingots -= cost.ingots;
-          gridSize++;
-          const currentDrakes = cells.map(cell => {
-            if (cell.children.length > 0) {
-              return cell.querySelector("img").dataset.level;
-            } else {
-              return null;
-            }
-          });
+    document.getElementById("expandBtn").addEventListener("click", () => {
+      const costs = { 3: { coins: 1000, ingots: 1, newSize: 4 },
+                      4: { coins: 10000, ingots: 5, newSize: 5 },
+                      5: { coins: 100000, ingots: 20, newSize: 6 }};
+      if (costs[gridSize] && coins >= costs[gridSize].coins && ingots >= costs[gridSize].ingots) {
+        coins -= costs[gridSize].coins;
+        ingots -= costs[gridSize].ingots;
+        gridSize = costs[gridSize].newSize;
+        createGrid(gridSize);
+        updateCoins();
+      }
+    });
+
+    document.getElementById("saveBtn").addEventListener("click", () => {
+      const saveData = {
+        coins, ingots, gridSize, drakeCost, coinMultiplier,
+        grid: [...document.querySelectorAll(".cell")].map(cell => {
+          const drake = cell.querySelector("img");
+          return drake ? drake.dataset.level : 0;
+        })
+      };
+      localStorage.setItem("fireDrakeSave", JSON.stringify(saveData));
+      alert("Progress saved!");
+    });
+
+    document.getElementById("prestigeBtn").addEventListener("click", () => {
+      if (coins >= 1000000) {
+        if (confirm("Prestige? You will reset everything but gain 2x multiplier!")) {
+          coins = 20;
+          ingots = 0;
+          gridSize = 3;
+          drakeCost = 20;
+          coinMultiplier *= 2;
+          multiplierDisplay.textContent = coinMultiplier + "x";
           createGrid(gridSize);
-          currentDrakes.forEach((level, i) => {
-            if (level && i < cells.length) {
-              spawnDrake(cells[i], parseInt(level));
-            }
-          });
           updateCoins();
           updateIncome();
-          alert(`Grid expanded to ${gridSize}x${gridSize}!`);
         }
       }
     });
 
-    // Prestige
-    prestigeBtn.addEventListener("click", () => {
-      if (coins >= 1000000) {
-        coins = 0;
-        ingots = 0;
-        drakeCost = 20;
-        gridSize = 3;
-        coinMultiplier *= 2;
-        multiplierDisplay.textContent = coinMultiplier + "x";
-        createGrid(gridSize);
-        updateCoins();
-        updateIncome();
-        alert("Prestiged! Coin multiplier doubled.");
-      }
-    });
-
-    // Delete progress
-    deleteBtn.addEventListener("click", () => {
+    document.getElementById("deleteBtn").addEventListener("click", () => {
       if (confirm("Are you sure you want to delete all progress? This cannot be undone!")) {
         localStorage.removeItem("fireDrakeSave");
         coins = 20;
@@ -357,43 +273,38 @@
       }
     });
 
-    // Save & load
-    saveBtn.addEventListener("click", () => {
-      const saveData = {
-        coins,
-        ingots,
-        gridSize,
-        drakeCost,
-        coinMultiplier,
-        drakes: cells.map(cell => {
-          const drake = cell.querySelector("img");
-          return drake ? parseInt(drake.dataset.level) : null;
-        })
-      };
-      localStorage.setItem("fireDrakeSave", JSON.stringify(saveData));
-      alert("Game saved!");
-    });
+    setInterval(() => {
+      let totalIncome = 0;
+      document.querySelectorAll(".drake img").forEach(drake => {
+        const level = drake.dataset.level;
+        totalIncome += drakeData[level].income;
+      });
+      coins += totalIncome * coinMultiplier;
+      updateCoins();
+    }, 1000);
 
-    window.addEventListener("load", () => {
-      const data = localStorage.getItem("fireDrakeSave");
-      if (data) {
-        const save = JSON.parse(data);
-        coins = save.coins;
-        ingots = save.ingots;
-        gridSize = save.gridSize;
-        drakeCost = save.drakeCost;
-        coinMultiplier = save.coinMultiplier || 1;
+    // Load game
+    window.onload = () => {
+      const saveData = JSON.parse(localStorage.getItem("fireDrakeSave"));
+      if (saveData) {
+        coins = saveData.coins;
+        ingots = saveData.ingots;
+        gridSize = saveData.gridSize;
+        drakeCost = saveData.drakeCost;
+        coinMultiplier = saveData.coinMultiplier || 1;
         multiplierDisplay.textContent = coinMultiplier + "x";
         createGrid(gridSize);
-        save.drakes.forEach((level, i) => {
-          if (level && i < cells.length) spawnDrake(cells[i], level);
+        [...document.querySelectorAll(".cell")].forEach((cell, i) => {
+          if (saveData.grid[i] > 0) spawnDrake(cell, saveData.grid[i]);
         });
+        updateCoins();
+        updateIncome();
       } else {
         createGrid(gridSize);
+        updateCoins();
+        updateIncome();
       }
-      updateCoins();
-      updateIncome();
-    });
+    };
   </script>
 </body>
 </html>
