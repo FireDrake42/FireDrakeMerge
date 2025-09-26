@@ -2,175 +2,157 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🔥 Fire Drake Merge 🔥</title>
+  <title>Fire Drake Merge</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
-      background: linear-gradient(180deg, #8b0000, #ff4500);
+      background: linear-gradient(135deg, #ff4d4d, #ff9933);
       color: #fff;
+      text-align: center;
       margin: 0;
       padding: 0;
     }
     h1 {
-      font-size: 2.5em;
       margin-top: 20px;
-      text-shadow: 2px 2px 5px black;
+      font-size: 2em;
+      text-shadow: 2px 2px 4px #000;
     }
     #stats {
-      margin-top: 10px;
-      font-size: 18px;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin: 20px 0;
+      font-size: 1.2em;
     }
-    #coins, #income, #ingots, #multiplier {
-      font-weight: bold;
-      text-shadow: 1px 1px 3px black;
-    }
-    #coins { color: #ffeb3b; }
-    #ingots { color: #ffd700; }
-    #income { color: #7fff00; }
-    #multiplier { color: #00e5ff; }
-
-    #game {
+    #grid {
       display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(3, 100px);
-      gap: 10px;
+      gap: 8px;
       justify-content: center;
       margin: 20px auto;
     }
     .cell {
-      width: 100px;
-      height: 100px;
-      background: #222;
-      border: 2px solid #ff6347;
+      width: 90px;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid #fff;
       border-radius: 10px;
       display: flex;
-      align-items: center;
       justify-content: center;
-      box-shadow: 0 0 10px rgba(255, 99, 71, 0.8);
+      align-items: center;
+      cursor: pointer;
     }
     .drake {
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-size: 12px;
-      color: #fff;
-      cursor: pointer;
     }
     .drake img {
-      max-width: 70px;
-      max-height: 70px;
+      width: 70px;
+      height: 70px;
+      pointer-events: none;
     }
-    .selected {
-      outline: 3px solid yellow;
-      border-radius: 6px;
+    .drake span {
+      font-size: 0.8em;
+      margin-top: 4px;
+      text-shadow: 1px 1px 2px #000;
     }
     #controls {
       margin-top: 20px;
       display: flex;
-      flex-direction: column;
+      flex-direction: column; /* vertical layout */
       align-items: center;
       gap: 10px;
     }
     button {
       padding: 12px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 10px;
+      font-size: 1em;
       border: none;
-      width: 260px;
-      color: white;
-      transition: all 0.2s ease-in-out;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      border-radius: 8px;
+      cursor: pointer;
+      background: #fff;
+      color: #ff4d4d;
+      font-weight: bold;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+      transition: transform 0.1s, background 0.2s;
+      width: 220px;
     }
-    button:hover:not(:disabled) {
+    button:hover {
       transform: scale(1.05);
+      background: #ffe6e6;
     }
     button:disabled {
-      background: #666;
+      background: #999;
+      color: #555;
       cursor: not-allowed;
+      transform: none;
     }
-
-    /* Themed button colors */
-    #buyDrake { background: #28a745; }
-    #buyDrake:hover:not(:disabled) { background: #218838; }
-
-    #buyIngot { background: #f1c40f; color: #222; font-weight: bold; }
-    #buyIngot:hover:not(:disabled) { background: #d4ac0d; }
-
-    #expandGrid { background: #3498db; }
-    #expandGrid:hover:not(:disabled) { background: #217dbb; }
-
-    #saveGame { background: #e74c3c; }
-    #saveGame:hover:not(:disabled) { background: #c0392b; }
-
-    #prestige { background: #9b59b6; }
-    #prestige:hover:not(:disabled) { background: #8e44ad; }
+    .selected {
+      border: 3px solid yellow !important;
+    }
   </style>
 </head>
 <body>
   <h1>🔥 Fire Drake Merge 🔥</h1>
+
   <div id="stats">
-    Coins: <span id="coins">20</span> | 
-    Ingots: <span id="ingots">0</span> | 
-    Passive Income: <span id="income">0</span>/sec <br>
-    Prestige Multiplier: <span id="multiplier">1x</span>
+    <div>Coins: <span id="coins">0</span></div>
+    <div>Ingots: <span id="ingots">0</span></div>
+    <div>Income/sec: <span id="income">0</span></div>
+    <div>Multiplier: <span id="multiplier">1x</span></div>
   </div>
 
-  <div id="game"></div>
+  <div id="grid"></div>
 
   <div id="controls">
-    <button id="buyDrake">Buy Drake (20 coins)</button>
-    <button id="buyIngot">Buy Ingot (1K coins)</button>
-    <button id="expandGrid">Expand Grid (1K coins + 1 ingot)</button>
-    <button id="saveGame">Save Progress</button>
-    <button id="prestige">Prestige (1M coins → 2x multiplier)</button>
+    <button id="buyBtn">Buy Drake (20 coins)</button>
+    <button id="ingotBtn">Buy Ingot (1K coins)</button>
+    <button id="expandBtn">Expand Grid</button>
+    <button id="saveBtn">Save Progress</button>
+    <button id="prestigeBtn">Prestige (1M coins)</button>
   </div>
 
   <script>
-    let gridSize = 3;
     let coins = 20;
     let ingots = 0;
+    let gridSize = 3;
+    let cells = [];
+    let selectedDrake = null;
+    let coinMultiplier = 1;
     let drakeCost = 20;
-    let multiplier = 1; 
 
     const coinDisplay = document.getElementById("coins");
     const ingotDisplay = document.getElementById("ingots");
     const incomeDisplay = document.getElementById("income");
     const multiplierDisplay = document.getElementById("multiplier");
-    const game = document.getElementById("game");
-    const buyBtn = document.getElementById("buyDrake");
-    const ingotBtn = document.getElementById("buyIngot");
-    const expandBtn = document.getElementById("expandGrid");
-    const saveBtn = document.getElementById("saveGame");
-    const prestigeBtn = document.getElementById("prestige");
+    const grid = document.getElementById("grid");
+    const buyBtn = document.getElementById("buyBtn");
+    const ingotBtn = document.getElementById("ingotBtn");
+    const expandBtn = document.getElementById("expandBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const prestigeBtn = document.getElementById("prestigeBtn");
 
-    let selectedDrake = null; 
-    let cells = [];
-
-    // 🔥 Central data for all drakes (now up to lvl8)
-    const drakeData = {
-      1: { income: 1,    img: "/lvl1drake.png" },
-      2: { income: 3,    img: "/lvl2drake.png" },
-      3: { income: 10,   img: "/lvl3drake.png" },
-      4: { income: 25,   img: "/lvl4drake.png" },
-      5: { income: 60,   img: "/lvl5drake.png" },
-      6: { income: 150,  img: "/lvl6drake.png" },
-      7: { income: 400,  img: "/lvl7drake.png" },
-      8: { income: 1000, img: "/lvl8drake.png" }
-    };
-
+    // Expansion costs (coins & ingots)
     const expansionCosts = {
       3: { coins: 1000, ingots: 1 },
-      4: { coins: 10000, ingots: 2 },
-      5: { coins: 100000, ingots: 5 }
+      4: { coins: 10000, ingots: 5 },
+      5: { coins: 100000, ingots: 20 }
+    };
+
+    // Drake data for levels
+    const drakeData = {
+      1: { income: 1,   img: "/lvl1drake.png" },
+      2: { income: 3,   img: "/lvl2drake.png" },
+      3: { income: 10,  img: "/lvl3drake.png" },
+      4: { income: 25,  img: "/lvl4drake.png" },
+      5: { income: 60,  img: "/lvl5drake.png" },
+      6: { income: 150, img: "/lvl6drake.png" },
+      7: { income: 400, img: "/lvl7drake.png" },
+      8: { income: 1000,img: "/lvl8drake.png" }
     };
 
     function formatNumber(num) {
-      if (num >= 1_000_000_000) {
-        return (num / 1_000_000_000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "B";
-      } else if (num >= 1_000_000) {
-        return (num / 1_000_000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "M";
+      if (num >= 1000000) {
+        return (num / 1000000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "M";
       } else if (num >= 1000) {
         return (num / 1000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "K";
       } else {
@@ -179,51 +161,16 @@
     }
 
     function createGrid(size) {
-      game.innerHTML = "";
-      game.style.gridTemplateColumns = `repeat(${size}, 100px)`;
-      game.style.gridTemplateRows = `repeat(${size}, 100px)`;
+      grid.innerHTML = "";
+      grid.style.gridTemplateColumns = `repeat(${size}, 90px)`;
+      grid.style.gridTemplateRows = `repeat(${size}, 90px)`;
       cells = [];
       for (let i = 0; i < size * size; i++) {
         const cell = document.createElement("div");
         cell.classList.add("cell");
-        game.appendChild(cell);
         cells.push(cell);
+        grid.appendChild(cell);
       }
-    }
-
-    function updateStats() {
-      coinDisplay.textContent = formatNumber(coins);
-      ingotDisplay.textContent = formatNumber(ingots);
-      multiplierDisplay.textContent = multiplier + "x";
-      buyBtn.textContent = `Buy Drake (${formatNumber(drakeCost)} coins)`;
-      buyBtn.disabled = coins < drakeCost;
-      ingotBtn.textContent = `Buy Ingot (${formatNumber(1000)} coins)`;
-      ingotBtn.disabled = coins < 1000;
-
-      if (expansionCosts[gridSize]) {
-        const cost = expansionCosts[gridSize];
-        expandBtn.textContent = `Expand Grid to ${gridSize + 1}x${gridSize + 1} (${formatNumber(cost.coins)} coins + ${formatNumber(cost.ingots)} ingots)`;
-        expandBtn.disabled = coins < cost.coins || ingots < cost.ingots;
-      } else {
-        expandBtn.textContent = "Max Grid Reached";
-        expandBtn.disabled = true;
-      }
-
-      prestigeBtn.textContent = `Prestige (1M coins → ${multiplier * 2}x multiplier)`;
-      prestigeBtn.disabled = coins < 1_000_000;
-    }
-
-    function updateIncome() {
-      let income = 0;
-      cells.forEach(cell => {
-        if (cell.children.length > 0) {
-          const drake = cell.querySelector("img");
-          const lvl = parseInt(drake.dataset.level);
-          if (drakeData[lvl]) income += drakeData[lvl].income;
-        }
-      });
-      incomeDisplay.textContent = formatNumber(income * multiplier);
-      return income * multiplier;
     }
 
     function spawnDrake(cell, level) {
@@ -236,7 +183,7 @@
       drake.src = drakeData[level].img;
 
       const label = document.createElement("span");
-      label.textContent = "lvl" + level;
+      label.textContent = `lvl${level} (+${drakeData[level].income}/s)`;
 
       container.appendChild(drake);
       container.appendChild(label);
@@ -266,114 +213,157 @@
 
           cell1.innerHTML = "";
           cell2.innerHTML = "";
-          spawnDrake(cell1, newLevel);
 
-          selectedDrake = null;
-        } else {
-          selectedDrake.classList.remove("selected");
-          selectedDrake = null;
+          spawnDrake(cell1, newLevel);
         }
+        selectedDrake.classList.remove("selected");
+        selectedDrake = null;
       }
     }
 
+    function updateCoins() {
+      coinDisplay.textContent = formatNumber(coins);
+      ingotDisplay.textContent = formatNumber(ingots);
+      buyBtn.textContent = `Buy Drake (${formatNumber(drakeCost)} coins)`;
+      buyBtn.disabled = coins < drakeCost;
+      ingotBtn.disabled = coins < 1000;
+
+      if (expansionCosts[gridSize]) {
+        const cost = expansionCosts[gridSize];
+        expandBtn.textContent = `Expand Grid to ${gridSize+1}x${gridSize+1} (${formatNumber(cost.coins)} & ${formatNumber(cost.ingots)} ingots)`;
+        expandBtn.disabled = coins < cost.coins || ingots < cost.ingots;
+      } else {
+        expandBtn.textContent = "Max Grid Reached";
+        expandBtn.disabled = true;
+      }
+
+      prestigeBtn.disabled = coins < 1000000;
+    }
+
+    function updateIncome() {
+      let totalIncome = 0;
+      cells.forEach(cell => {
+        const drake = cell.querySelector("img");
+        if (drake) {
+          const level = parseInt(drake.dataset.level);
+          totalIncome += drakeData[level]?.income || 0;
+        }
+      });
+      totalIncome *= coinMultiplier;
+      incomeDisplay.textContent = formatNumber(totalIncome);
+      return totalIncome;
+    }
+
+    setInterval(() => {
+      coins += updateIncome();
+      updateCoins();
+    }, 1000);
+
+    // Buy drake
     buyBtn.addEventListener("click", () => {
       if (coins >= drakeCost) {
-        const emptyCell = cells.find(c => c.children.length === 0);
-        if (!emptyCell) {
-          alert("No empty space left on the grid!");
+        const empty = cells.find(cell => cell.children.length === 0);
+        if (!empty) {
+          alert("No empty space!");
           return;
         }
         coins -= drakeCost;
         drakeCost = Math.floor(drakeCost * 1.5);
-        updateStats();
-        spawnDrake(emptyCell, 1);
+        spawnDrake(empty, 1);
+        updateCoins();
       }
     });
 
+    // Buy ingot
     ingotBtn.addEventListener("click", () => {
       if (coins >= 1000) {
         coins -= 1000;
-        ingots += 1;
-        updateStats();
+        ingots++;
+        updateCoins();
       }
     });
 
+    // Expand grid
     expandBtn.addEventListener("click", () => {
-      const cost = expansionCosts[gridSize];
-      if (cost && coins >= cost.coins && ingots >= cost.ingots) {
-        coins -= cost.coins;
-        ingots -= cost.ingots;
-        gridSize++;
-
-        const currentDrakes = cells.map(cell => {
-          if (cell.children.length > 0) return cell.querySelector("img").dataset.level;
-          return null;
-        });
-
-        createGrid(gridSize);
-        currentDrakes.forEach((level, i) => {
-          if (level && i < cells.length) spawnDrake(cells[i], parseInt(level));
-        });
-
-        updateStats();
-        updateIncome();
-        alert(`Grid expanded to ${gridSize}x${gridSize}!`);
+      if (expansionCosts[gridSize]) {
+        const cost = expansionCosts[gridSize];
+        if (coins >= cost.coins && ingots >= cost.ingots) {
+          coins -= cost.coins;
+          ingots -= cost.ingots;
+          gridSize++;
+          const currentDrakes = cells.map(cell => {
+            if (cell.children.length > 0) {
+              return cell.querySelector("img").dataset.level;
+            } else {
+              return null;
+            }
+          });
+          createGrid(gridSize);
+          currentDrakes.forEach((level, i) => {
+            if (level && i < cells.length) {
+              spawnDrake(cells[i], parseInt(level));
+            }
+          });
+          updateCoins();
+          updateIncome();
+          alert(`Grid expanded to ${gridSize}x${gridSize}!`);
+        }
       }
     });
 
-    setInterval(() => {
-      const income = updateIncome();
-      if (income > 0) {
-        coins += income;
-        updateStats();
+    // Prestige
+    prestigeBtn.addEventListener("click", () => {
+      if (coins >= 1000000) {
+        coins = 0;
+        ingots = 0;
+        drakeCost = 20;
+        gridSize = 3;
+        coinMultiplier *= 2;
+        multiplierDisplay.textContent = coinMultiplier + "x";
+        createGrid(gridSize);
+        updateCoins();
+        updateIncome();
+        alert("Prestiged! Coin multiplier doubled.");
       }
-    }, 1000);
+    });
 
+    // Save & load
     saveBtn.addEventListener("click", () => {
       const saveData = {
-        coins, ingots, gridSize, drakeCost, multiplier,
-        grid: cells.map(cell => cell.children.length > 0 ? cell.querySelector("img").dataset.level : null)
+        coins,
+        ingots,
+        gridSize,
+        drakeCost,
+        coinMultiplier,
+        drakes: cells.map(cell => {
+          const drake = cell.querySelector("img");
+          return drake ? parseInt(drake.dataset.level) : null;
+        })
       };
       localStorage.setItem("fireDrakeSave", JSON.stringify(saveData));
       alert("Game saved!");
     });
 
-    prestigeBtn.addEventListener("click", () => {
-      if (coins >= 1_000_000) {
-        multiplier *= 2;
-        coins = 20;
-        ingots = 0;
-        drakeCost = 20;
-        gridSize = 3;
+    window.addEventListener("load", () => {
+      const data = localStorage.getItem("fireDrakeSave");
+      if (data) {
+        const save = JSON.parse(data);
+        coins = save.coins;
+        ingots = save.ingots;
+        gridSize = save.gridSize;
+        drakeCost = save.drakeCost;
+        coinMultiplier = save.coinMultiplier || 1;
+        multiplierDisplay.textContent = coinMultiplier + "x";
         createGrid(gridSize);
-        updateStats();
-        updateIncome();
-        alert(`Prestige successful! Your coin multiplier is now ${multiplier}x`);
-      }
-    });
-
-    function loadGame() {
-      const saveData = JSON.parse(localStorage.getItem("fireDrakeSave"));
-      if (saveData) {
-        coins = saveData.coins;
-        ingots = saveData.ingots || 0;
-        gridSize = saveData.gridSize || 3;
-        drakeCost = saveData.drakeCost || 20;
-        multiplier = saveData.multiplier || 1;
-        createGrid(gridSize);
-        saveData.grid.forEach((level, i) => {
-          if (level) spawnDrake(cells[i], parseInt(level));
+        save.drakes.forEach((level, i) => {
+          if (level && i < cells.length) spawnDrake(cells[i], level);
         });
-        updateStats();
-        updateIncome();
       } else {
         createGrid(gridSize);
       }
-    }
-
-    loadGame();
-    updateStats();
-    updateIncome();
+      updateCoins();
+      updateIncome();
+    });
   </script>
 </body>
 </html>
