@@ -2,13 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Fire Drake Merge</title>
+  <title>🔥 Fire Drake Merge 🔥</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: #222;
+      background: linear-gradient(180deg, #8b0000, #ff4500);
       color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-top: 20px;
+      text-shadow: 2px 2px 5px black;
     }
     #game {
       display: grid;
@@ -21,11 +28,13 @@
     .cell {
       width: 100px;
       height: 100px;
-      background: #444;
-      border: 2px solid #666;
+      background: #222;
+      border: 2px solid #ff6347;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 0 10px rgba(255, 99, 71, 0.8);
     }
     .drake {
       display: flex;
@@ -50,15 +59,26 @@
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
       margin: 5px;
-      background: #e63946;
+      background: #ff6347;
       color: white;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    button:hover:not(:disabled) {
+      background: #ff4500;
+      transform: scale(1.05);
     }
     button:disabled {
-      background: #999;
+      background: #666;
       cursor: not-allowed;
+    }
+    #coins, #income {
+      font-weight: bold;
+      color: #ffeb3b;
+      text-shadow: 1px 1px 3px black;
     }
   </style>
 </head>
@@ -79,6 +99,8 @@
   <script>
     let gridSize = 3;
     let coins = 20;
+    let drakeCost = 20; // starts at 20, increases by 50% each purchase
+
     const coinDisplay = document.getElementById("coins");
     const incomeDisplay = document.getElementById("income");
     const game = document.getElementById("game");
@@ -90,20 +112,14 @@
     let selectedDrake = null; 
     let cells = [];
 
-    // Income per level
-    const incomeValues = {
-      1: 1,
-      2: 3
-    };
+    const incomeValues = { 1: 1, 2: 3 };
 
-    // Expansion costs
     const expansionCosts = {
-      3: 1000,    // 3x3 -> 4x4
-      4: 10000,   // 4x4 -> 5x5
-      5: 100000   // 5x5 -> 6x6
+      3: 1000,   
+      4: 10000,  
+      5: 100000  
     };
 
-    // Format numbers with K / M
     function formatNumber(num) {
       if (num >= 1000000) {
         return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
@@ -129,7 +145,9 @@
 
     function updateCoins() {
       coinDisplay.textContent = formatNumber(coins);
-      buyBtn.disabled = coins < 20;
+      buyBtn.textContent = `Buy Drake (${formatNumber(drakeCost)} coins)`;
+      buyBtn.disabled = coins < drakeCost;
+      ingotBtn.textContent = `Buy Ingot (${formatNumber(1000)} coins)`;
       ingotBtn.disabled = coins < 1000;
 
       if (expansionCosts[gridSize]) {
@@ -203,13 +221,17 @@
     }
 
     buyBtn.addEventListener("click", () => {
-      if (coins >= 20) {
+      if (coins >= drakeCost) {
         const emptyCell = cells.find(c => c.children.length === 0);
         if (!emptyCell) {
           alert("No empty space left on the grid!");
           return;
         }
-        coins -= 20;
+        coins -= drakeCost;
+
+        // increase drake cost by 50%, rounded down
+        drakeCost = Math.floor(drakeCost * 1.5);
+
         updateCoins();
         spawnDrake(emptyCell, 1);
       }
@@ -228,7 +250,6 @@
         coins -= expansionCosts[gridSize];
         gridSize++;
 
-        // Save drakes before expansion
         const currentDrakes = cells.map(cell => {
           if (cell.children.length > 0) {
             return cell.querySelector("img").dataset.level;
@@ -237,10 +258,8 @@
           }
         });
 
-        // Recreate larger grid
         createGrid(gridSize);
 
-        // Restore drakes into new grid
         currentDrakes.forEach((level, i) => {
           if (level && i < cells.length) {
             spawnDrake(cells[i], parseInt(level));
@@ -265,6 +284,7 @@
       const saveData = {
         coins,
         gridSize,
+        drakeCost,
         grid: cells.map(cell => {
           if (cell.children.length > 0) {
             return cell.querySelector("img").dataset.level;
@@ -282,6 +302,7 @@
       if (saveData) {
         coins = saveData.coins;
         gridSize = saveData.gridSize || 3;
+        drakeCost = saveData.drakeCost || 20;
         createGrid(gridSize);
         saveData.grid.forEach((level, i) => {
           if (level) {
