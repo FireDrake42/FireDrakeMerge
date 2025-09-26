@@ -17,6 +17,18 @@
       margin-top: 20px;
       text-shadow: 2px 2px 5px black;
     }
+    #stats {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+    #coins, #income, #ingots {
+      font-weight: bold;
+      text-shadow: 1px 1px 3px black;
+    }
+    #coins { color: #ffeb3b; }
+    #ingots { color: #ffd700; }
+    #income { color: #7fff00; }
+
     #game {
       display: grid;
       grid-template-columns: repeat(3, 100px);
@@ -75,33 +87,33 @@
       background: #666;
       cursor: not-allowed;
     }
-    #coins, #income {
-      font-weight: bold;
-      color: #ffeb3b;
-      text-shadow: 1px 1px 3px black;
-    }
   </style>
 </head>
 <body>
   <h1>🔥 Fire Drake Merge 🔥</h1>
-  <p>Coins: <span id="coins">20</span></p>
-  <p>Passive Income: <span id="income">0</span> coins/sec</p>
+  <div id="stats">
+    Coins: <span id="coins">20</span> | 
+    Ingots: <span id="ingots">0</span> | 
+    Passive Income: <span id="income">0</span>/sec
+  </div>
 
   <div id="game"></div>
 
   <div id="controls">
     <button id="buyDrake">Buy Drake (20 coins)</button>
     <button id="buyIngot">Buy Ingot (1K coins)</button>
-    <button id="expandGrid">Expand Grid (1K coins)</button>
+    <button id="expandGrid">Expand Grid (1K coins + 1 ingot)</button>
     <button id="saveGame">Save Progress</button>
   </div>
 
   <script>
     let gridSize = 3;
     let coins = 20;
-    let drakeCost = 20; // starts at 20, increases by 50% each purchase
+    let ingots = 0;
+    let drakeCost = 20;
 
     const coinDisplay = document.getElementById("coins");
+    const ingotDisplay = document.getElementById("ingots");
     const incomeDisplay = document.getElementById("income");
     const game = document.getElementById("game");
     const buyBtn = document.getElementById("buyDrake");
@@ -114,10 +126,11 @@
 
     const incomeValues = { 1: 1, 2: 3 };
 
+    // Expansion costs: coins + ingots
     const expansionCosts = {
-      3: 1000,   
-      4: 10000,  
-      5: 100000  
+      3: { coins: 1000, ingots: 1 },
+      4: { coins: 10000, ingots: 2 },
+      5: { coins: 100000, ingots: 5 }
     };
 
     function formatNumber(num) {
@@ -143,16 +156,18 @@
       }
     }
 
-    function updateCoins() {
+    function updateStats() {
       coinDisplay.textContent = formatNumber(coins);
+      ingotDisplay.textContent = ingots;
       buyBtn.textContent = `Buy Drake (${formatNumber(drakeCost)} coins)`;
       buyBtn.disabled = coins < drakeCost;
       ingotBtn.textContent = `Buy Ingot (${formatNumber(1000)} coins)`;
       ingotBtn.disabled = coins < 1000;
 
       if (expansionCosts[gridSize]) {
-        expandBtn.textContent = `Expand Grid to ${gridSize + 1}x${gridSize + 1} (${formatNumber(expansionCosts[gridSize])} coins)`;
-        expandBtn.disabled = coins < expansionCosts[gridSize];
+        const cost = expansionCosts[gridSize];
+        expandBtn.textContent = `Expand Grid to ${gridSize + 1}x${gridSize + 1} (${formatNumber(cost.coins)} coins + ${cost.ingots} ingots)`;
+        expandBtn.disabled = coins < cost.coins || ingots < cost.ingots;
       } else {
         expandBtn.textContent = "Max Grid Reached";
         expandBtn.disabled = true;
@@ -228,11 +243,8 @@
           return;
         }
         coins -= drakeCost;
-
-        // increase drake cost by 50%, rounded down
         drakeCost = Math.floor(drakeCost * 1.5);
-
-        updateCoins();
+        updateStats();
         spawnDrake(emptyCell, 1);
       }
     });
@@ -240,14 +252,16 @@
     ingotBtn.addEventListener("click", () => {
       if (coins >= 1000) {
         coins -= 1000;
-        updateCoins();
-        alert("You bought an Ingot! (Feature coming soon 🔨)");
+        ingots += 1;
+        updateStats();
       }
     });
 
     expandBtn.addEventListener("click", () => {
-      if (expansionCosts[gridSize] && coins >= expansionCosts[gridSize]) {
-        coins -= expansionCosts[gridSize];
+      const cost = expansionCosts[gridSize];
+      if (cost && coins >= cost.coins && ingots >= cost.ingots) {
+        coins -= cost.coins;
+        ingots -= cost.ingots;
         gridSize++;
 
         const currentDrakes = cells.map(cell => {
@@ -266,7 +280,7 @@
           }
         });
 
-        updateCoins();
+        updateStats();
         updateIncome();
         alert(`Grid expanded to ${gridSize}x${gridSize}!`);
       }
@@ -276,13 +290,14 @@
       const income = updateIncome();
       if (income > 0) {
         coins += income;
-        updateCoins();
+        updateStats();
       }
     }, 1000);
 
     saveBtn.addEventListener("click", () => {
       const saveData = {
         coins,
+        ingots,
         gridSize,
         drakeCost,
         grid: cells.map(cell => {
@@ -301,6 +316,7 @@
       const saveData = JSON.parse(localStorage.getItem("fireDrakeSave"));
       if (saveData) {
         coins = saveData.coins;
+        ingots = saveData.ingots || 0;
         gridSize = saveData.gridSize || 3;
         drakeCost = saveData.drakeCost || 20;
         createGrid(gridSize);
@@ -309,7 +325,7 @@
             spawnDrake(cells[i], parseInt(level));
           }
         });
-        updateCoins();
+        updateStats();
         updateIncome();
       } else {
         createGrid(gridSize);
@@ -317,7 +333,7 @@
     }
 
     loadGame();
-    updateCoins();
+    updateStats();
     updateIncome();
   </script>
 </body>
