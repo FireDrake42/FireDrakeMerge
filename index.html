@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #660000, #990000, #330000); /* 🔥 bloody red */
+      background: linear-gradient(to bottom, #660000, #990000, #330000); /* 🔥 vertical bloody red */
       background-attachment: fixed;
       color: #fff;
       text-align: center;
@@ -26,7 +26,7 @@
     .cell {
       width: 80px;
       height: 80px;
-      background: rgba(0, 0, 0, 0.4); /* darker for bloody theme */
+      background: rgba(0, 0, 0, 0.4);
       border: 1px solid #fff;
       display: flex;
       align-items: center;
@@ -49,7 +49,7 @@
     #controls {
       margin-top: 20px;
       display: flex;
-      flex-direction: column; /* buttons stacked */
+      flex-direction: column;
       align-items: center;
       gap: 10px;
     }
@@ -213,7 +213,7 @@
       if (coins >= drakeCost) {
         coins -= drakeCost;
         spawnDrake(emptyCell, 1);
-        drakeCost = Math.floor(drakeCost * 1.25); // 25% increase ✅
+        drakeCost = Math.floor(drakeCost * 1.25); // 25% increase
         updateCoins();
         updateBuyButton();
       } else {
