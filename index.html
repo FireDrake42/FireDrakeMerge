@@ -66,26 +66,59 @@
     }
     #controls {
       margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
     }
     button {
-      padding: 10px 20px;
+      padding: 12px 20px;
       font-size: 16px;
       cursor: pointer;
       border-radius: 10px;
       border: none;
-      margin: 5px;
-      background: #ff6347;
+      width: 240px;
       color: white;
       transition: all 0.2s ease-in-out;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
     button:hover:not(:disabled) {
-      background: #ff4500;
       transform: scale(1.05);
     }
     button:disabled {
       background: #666;
       cursor: not-allowed;
+    }
+
+    /* Themed button colors */
+    #buyDrake {
+      background: #28a745; /* green */
+    }
+    #buyDrake:hover:not(:disabled) {
+      background: #218838;
+    }
+
+    #buyIngot {
+      background: #f1c40f; /* gold */
+      color: #222;
+      font-weight: bold;
+    }
+    #buyIngot:hover:not(:disabled) {
+      background: #d4ac0d;
+    }
+
+    #expandGrid {
+      background: #3498db; /* blue */
+    }
+    #expandGrid:hover:not(:disabled) {
+      background: #217dbb;
+    }
+
+    #saveGame {
+      background: #e74c3c; /* red */
+    }
+    #saveGame:hover:not(:disabled) {
+      background: #c0392b;
     }
   </style>
 </head>
@@ -126,7 +159,6 @@
 
     const incomeValues = { 1: 1, 2: 3 };
 
-    // Expansion costs: coins + ingots
     const expansionCosts = {
       3: { coins: 1000, ingots: 1 },
       4: { coins: 10000, ingots: 2 },
