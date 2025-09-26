@@ -193,7 +193,7 @@
 
     function updateStats() {
       coinDisplay.textContent = formatNumber(coins);
-      ingotDisplay.textContent = ingots;
+      ingotDisplay.textContent = formatNumber(ingots);
       buyBtn.textContent = `Buy Drake (${formatNumber(drakeCost)} coins)`;
       buyBtn.disabled = coins < drakeCost;
       ingotBtn.textContent = `Buy Ingot (${formatNumber(1000)} coins)`;
@@ -201,7 +201,7 @@
 
       if (expansionCosts[gridSize]) {
         const cost = expansionCosts[gridSize];
-        expandBtn.textContent = `Expand Grid to ${gridSize + 1}x${gridSize + 1} (${formatNumber(cost.coins)} coins + ${cost.ingots} ingots)`;
+        expandBtn.textContent = `Expand Grid to ${gridSize + 1}x${gridSize + 1} (${formatNumber(cost.coins)} coins + ${formatNumber(cost.ingots)} ingots)`;
         expandBtn.disabled = coins < cost.coins || ingots < cost.ingots;
       } else {
         expandBtn.textContent = "Max Grid Reached";
