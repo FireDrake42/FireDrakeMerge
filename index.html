@@ -72,7 +72,7 @@
   <div id="controls">
     <button id="buyDrake">Buy Drake (20 coins)</button>
     <button id="buyIngot">Buy Ingot (1000 coins)</button>
-    <button id="expandGrid">Expand Grid to 4x4 (1000 coins)</button>
+    <button id="expandGrid">Expand Grid (1000 coins)</button>
     <button id="saveGame">Save Progress</button>
   </div>
 
@@ -90,9 +90,17 @@
     let selectedDrake = null; 
     let cells = [];
 
+    // Income values
     const incomeValues = {
       1: 1,  
       2: 3   
+    };
+
+    // Expansion costs per grid size
+    const expansionCosts = {
+      3: 1000,   // to expand from 3x3 to 4x4
+      4: 10000,  // to expand from 4x4 to 5x5
+      5: 100000  // to expand from 5x5 to 6x6
     };
 
     function createGrid(size) {
@@ -112,7 +120,14 @@
       coinDisplay.textContent = Math.floor(coins);
       buyBtn.disabled = coins < 20;
       ingotBtn.disabled = coins < 1000;
-      expandBtn.disabled = coins < 1000 || gridSize === 4;
+
+      if (expansionCosts[gridSize]) {
+        expandBtn.textContent = `Expand Grid to ${gridSize + 1}x${gridSize + 1} (${expansionCosts[gridSize]} coins)`;
+        expandBtn.disabled = coins < expansionCosts[gridSize];
+      } else {
+        expandBtn.textContent = "Max Grid Reached";
+        expandBtn.disabled = true;
+      }
     }
 
     function updateIncome() {
@@ -149,11 +164,10 @@
       }
     });
 
-    // FIXED: Preserve drakes when expanding
     expandBtn.addEventListener("click", () => {
-      if (coins >= 1000 && gridSize === 3) {
-        coins -= 1000;
-        gridSize = 4;
+      if (expansionCosts[gridSize] && coins >= expansionCosts[gridSize]) {
+        coins -= expansionCosts[gridSize];
+        gridSize++;
 
         // Save drakes before expansion
         const currentDrakes = cells.map(cell => {
@@ -176,7 +190,7 @@
 
         updateCoins();
         updateIncome();
-        alert("Grid expanded to 4x4!");
+        alert(`Grid expanded to ${gridSize}x${gridSize}!`);
       }
     });
 
