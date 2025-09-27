@@ -97,6 +97,7 @@ const prestigeBtn = document.getElementById('prestige');
 const deleteBtn = document.getElementById('deleteProgress');
 
 function formatNumber(n){
+  if (n >= 1_000_000_000) return (n/1_000_000_000).toFixed(2)+"B";
   if (n >= 1_000_000) return (n/1_000_000).toFixed(2)+"M";
   if (n >= 1_000) return (n/1_000).toFixed(2)+"K";
   return Math.floor(n);
@@ -154,7 +155,7 @@ function handleCellClick(cell){
 function updateUI(){
   coinsEl.textContent = formatNumber(coins);
   ingotsEl.textContent = formatNumber(ingots);
-  multEl.textContent = multiplier + 'x';
+  multEl.textContent = formatNumber(multiplier) + 'x';
   nextCostEl.textContent = formatNumber(drakeCost);
   buyDrakeBtn.textContent = `Buy Drake (${formatNumber(drakeCost)})`;
   autoBtn.disabled = autoUnlocked || ingots < 100;
