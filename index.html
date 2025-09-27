@@ -165,7 +165,6 @@ function updateUI(){
   multEl.textContent = multiplier + 'x';
   nextCostEl.textContent = formatNumber(drakeCost);
 
-  // update button label dynamically
   buyDrakeBtn.textContent = `Buy Drake (${formatNumber(drakeCost)})`;
 }
 
@@ -183,7 +182,10 @@ function buyDrake(){
   if(coins < drakeCost) { alert("Not enough coins!"); return; }
   coins -= drakeCost;
   spawnDrakeInCell(empty,1);
-  drakeCost = Math.floor(drakeCost*1.10); // 🔥 now 10% more each time
+
+  // ✅ increase cost by 1%, rounded to nearest 10
+  drakeCost = Math.round((drakeCost * 1.01) / 10) * 10;
+
   updateUI();
 }
 
