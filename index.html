@@ -57,7 +57,7 @@
     <button id="expandGrid" class="btn">Expand Grid</button>
     <button id="autoBtn" class="btn">Buy Auto (100 Ingots)</button>
     <button id="saveGame" class="btn">Save Progress</button>
-    <button id="prestige" class="btn">Prestige (1M)</button>
+    <button id="prestige" class="btn">Prestige (10K)</button>
     <button id="deleteProgress" class="btn">❌ Delete Progress</button>
   </div>
 
@@ -255,7 +255,7 @@ function loadGame(){
 }
 
 function prestige(){
-  if(coins<1e6) return;
+  if(coins<10000) return; // 10K coins
   multiplier*=2;
   coins=20; ingots=0; gridSize=3; drakeCost=20;
   autoUnlocked=false;
