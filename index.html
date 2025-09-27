@@ -203,17 +203,12 @@ function unlockAuto(){
 
 function autoActions(){
   if(!autoUnlocked) return;
-
-  // auto buy until no money or no space
   while(coins >= drakeCost && getEmptyCell()){
     buyDrake();
   }
-
-  // auto merge levels 1–7
   for(let lvl=1; lvl<=7; lvl++){
     let sameLevel = Array.from(document.querySelectorAll('.drake'))
       .filter(d => parseInt(d.dataset.level) === lvl);
-
     while(sameLevel.length >= 2){
       const c1 = sameLevel.pop().parentElement;
       const c2 = sameLevel.pop().parentElement;
@@ -227,7 +222,12 @@ function autoActions(){
 }
 
 function saveGame(){
-  const state={coins,ingots,gridSize,drakeCost,multiplier,autoUnlocked};
+  let drakes = [];
+  Array.from(gameEl.children).forEach(cell=>{
+    const d = cell.querySelector('.drake');
+    drakes.push(d ? parseInt(d.dataset.level) : 0);
+  });
+  const state={coins,ingots,gridSize,drakeCost,multiplier,autoUnlocked,drakes};
   localStorage.setItem("fireDrakeSave",JSON.stringify(state));
 }
 
@@ -242,13 +242,23 @@ function loadGame(){
   multiplier=data.multiplier??1;
   autoUnlocked=data.autoUnlocked??false;
   createGrid(gridSize);
+  if(data.drakes){
+    Array.from(gameEl.children).forEach((cell,i)=>{
+      if(data.drakes[i] && data.drakes[i]>0){
+        spawnDrakeInCell(cell,data.drakes[i]);
+      }
+    });
+  }
   updateUI();
   if(autoUnlocked) autoBtn.textContent="Auto: ACTIVE";
 }
 
 function prestige(){
   if(coins<1e6) return;
-  multiplier*=2; coins=20; ingots=0; gridSize=3; drakeCost=20; autoUnlocked=false;
+  multiplier*=2;
+  coins=20; ingots=0; gridSize=3; drakeCost=20;
+  autoUnlocked=false;
+  autoBtn.textContent="Buy Auto (100 Ingots)";
   createGrid(gridSize);
   updateUI();
 }
@@ -256,6 +266,7 @@ function prestige(){
 function deleteProgress(){
   localStorage.removeItem("fireDrakeSave");
   coins=20; ingots=0; gridSize=3; drakeCost=20; multiplier=1; autoUnlocked=false;
+  autoBtn.textContent="Buy Auto (100 Ingots)";
   createGrid(gridSize); updateUI();
 }
 
