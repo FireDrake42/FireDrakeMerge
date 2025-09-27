@@ -1,332 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Fire Drake Merge</title>
+  <meta charset="utf-8" />
+  <title>🔥 Fire Drake Merge 🔥</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #660000, #990000, #330000); /* 🔥 vertical bloody red */
-      background-attachment: fixed;
-      color: #fff;
-      text-align: center;
-      margin: 0;
-      padding: 0;
+    :root{
+      --bg-top:#660000;
+      --bg-mid:#990000;
+      --bg-bottom:#330000;
+      --stat-font: 18px;
+      --cell-size: 88px;
     }
-    #stats {
-      margin: 20px;
-      font-size: 20px;
-    }
-    #coins { color: gold; font-weight: bold; }       /* 🟡 Coins */
-    #ingots { color: goldenrod; font-weight: bold; } /* ✨ Ingots */
-    #income { color: lime; font-weight: bold; }      /* ✅ Passive income */
-    #multiplier { color: violet; font-weight: bold;} /* 🔮 Multiplier */
 
-    #grid {
+    html,body{height:100%;margin:0;padding:0}
+    body{
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(to bottom, var(--bg-top), var(--bg-mid), var(--bg-bottom));
+      color: #fff;
+      -webkit-font-smoothing:antialiased;
+      text-align: center;
+      padding: 18px 12px;
+    }
+
+    h1{
+      margin: 6px 0 14px;
+      font-size: 34px;
+      letter-spacing: 1px;
+      color: #ff6b6b;
+      text-shadow: 0 0 14px rgba(255,0,0,0.6);
+    }
+
+    /* Stats */
+    #stats{
+      display:flex;
+      justify-content:center;
+      gap:18px;
+      align-items:center;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+      font-weight:700;
+      font-size:var(--stat-font);
+      text-shadow: 0 0 6px rgba(0,0,0,0.6);
+    }
+    #stats div { padding:6px 10px; border-radius:8px; background: rgba(0,0,0,0.18); box-shadow: 0 4px 10px rgba(0,0,0,0.45); }
+
+    /* colored stat values */
+    #coins { color: gold; font-weight:900; text-shadow: 0 0 8px rgba(255,215,0,0.6); }
+    #ingots { color: goldenrod; font-weight:900; text-shadow: 0 0 8px rgba(218,165,32,0.6); }
+    #income { color: #7CFC00; font-weight:900; text-shadow: 0 0 8px rgba(124,252,0,0.25); }
+    #multiplier { color: violet; font-weight:900; text-shadow: 0 0 8px rgba(148,0,211,0.25); }
+    #nextCost { color: #fff; opacity:0.95; font-weight:800; }
+
+    /* Grid */
+    #game {
+      margin: 18px auto;
       display: grid;
-      gap: 5px;
-      justify-content: center;
-      margin: 20px auto;
-    }
-    .cell {
-      width: 80px;
-      height: 80px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      flex-direction: column;
-    }
-    .cell img {
-      max-width: 60px;
-      max-height: 60px;
-    }
-    .drake span {
-      font-size: 12px;
-      color: yellow;
-      margin-top: 2px;
-    }
-    .selected {
-      outline: 3px solid yellow;
-    }
-    #controls {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       gap: 10px;
+      justify-content: center;
+      width: fit-content;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.15);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6), inset 0 2px 10px rgba(255,0,0,0.03);
     }
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
+
+    .cell {
+      width: var(--cell-size);
+      height: var(--cell-size);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.28));
+      border-radius: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      border: 2px solid rgba(255,255,255,0.06);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 10px rgba(255,80,80,0.04);
       cursor: pointer;
-      font-size: 16px;
-      transition: transform 0.2s;
+      transition: transform .12s ease, box-shadow .12s ease;
+      position: relative;
     }
-    button:hover {
-      transform: scale(1.05);
+    .cell:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.7), 0 0 18px rgba(255,60,60,0.12); }
+
+    .drake { display:flex; align-items:center; justify-content:center; flex-direction:column; pointer-events:auto; }
+    .drake img { width: 64px; height: 64px; user-select:none; -webkit-user-drag:none; display:block; }
+    .drake span { margin-top:6px; font-size:12px; font-weight:800; text-shadow: 0 0 6px rgba(0,0,0,0.6); }
+
+    /* Label colors by level */
+    .lvl1 { color: #ffffff; }   /* white */
+    .lvl2 { color: #00ffcc; }   /* aqua */
+    .lvl3 { color: #33ff77; }   /* green */
+    .lvl4 { color: #fff266; }   /* yellow */
+    .lvl5 { color: #ffb347; }   /* orange */
+    .lvl6 { color: #ff66b2; }   /* pink */
+    .lvl7 { color: #b3b3ff; }   /* light purple */
+    .lvl8 { color: #ffd700; }   /* gold */
+
+    /* selection highlight */
+    .selected { outline: 4px solid rgba(255,255,0,0.95); outline-offset: -6px; border-radius:10px; }
+
+    /* Controls (vertical) */
+    #controls {
+      margin: 18px auto 30px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
     }
-    #buyBtn { background: orange; }
-    #ingotBtn { background: gold; }
-    #expandBtn { background: lightgreen; }
-    #saveBtn { background: lightblue; }
-    #prestigeBtn { background: violet; }
-    #deleteBtn { background: crimson; color: #fff; }
+    .btn {
+      width: 260px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      transition: transform .12s, box-shadow .12s, filter .12s;
+      text-transform: none;
+    }
+    .btn:active { transform: translateY(2px); }
+    .btn:disabled { filter: grayscale(.6) brightness(.8); cursor: not-allowed; box-shadow:none; }
+
+    /* colored buttons with glow */
+    #buyDrake { background: linear-gradient(180deg,#ffac33,#ff8a00); color:#3a1200; box-shadow: 0 8px 30px rgba(255,140,0,0.25); }
+    #buyDrake:hover:not(:disabled){ box-shadow: 0 14px 40px rgba(255,140,0,0.35); }
+
+    #buyIngot { background: linear-gradient(180deg,#ffea60,#ffcf00); color:#2b1b00; }
+    #buyIngot:hover:not(:disabled){ box-shadow: 0 14px 40px rgba(255,207,0,0.28); }
+
+    #expandGrid { background: linear-gradient(180deg,#7efc7e,#28c428); color:#062606; }
+    #expandGrid:hover:not(:disabled){ box-shadow: 0 14px 40px rgba(40,196,40,0.28); }
+
+    #saveGame { background: linear-gradient(180deg,#8fd1ff,#46aaff); color:#042d40; }
+    #saveGame:hover:not(:disabled){ box-shadow: 0 14px 40px rgba(70,170,255,0.2); }
+
+    #prestige { background: linear-gradient(180deg,#d9a3ff,#b06eff); color:#2b003f; }
+    #prestige:hover:not(:disabled){ box-shadow: 0 14px 40px rgba(176,110,255,0.22); }
+
+    #deleteProgress { background: linear-gradient(180deg,#ff5b5b,#c62828); color:#2b0000; }
+    #deleteProgress:hover:not(:disabled){ box-shadow: 0 14px 40px rgba(200,50,50,0.28); }
+
+    /* small responsiveness */
+    @media (max-width:520px){
+      .btn { width: 90%; }
+      #game { transform: scale(.92); }
+    }
   </style>
 </head>
 <body>
   <h1>🔥 Fire Drake Merge 🔥</h1>
+
   <div id="stats">
-    Coins: <span id="coins">20</span> | 
-    Ingots: <span id="ingots">0</span> | 
-    Passive Income: <span id="income">0 /sec</span> | 
-    Multiplier: <span id="multiplier">1x</span>
+    <div>Coins: <span id="coins">20</span></div>
+    <div>Ingots: <span id="ingots">0</span></div>
+    <div>Passive Income: <span id="income">0 /sec</span></div>
+    <div>Multiplier: <span id="multiplier">1x</span></div>
+    <div>Next Drake: <span id="nextCost">20</span></div>
   </div>
-  <div id="grid"></div>
+
+  <div id="game" aria-label="Drake grid"></div>
+
   <div id="controls">
-    <button id="buyBtn">Buy Drake</button>
-    <button id="ingotBtn">Buy Ingot (1K)</button>
-    <button id="expandBtn">Expand Grid (1K coins + 1 ingot)</button>
-    <button id="saveBtn">Save Progress</button>
-    <button id="prestigeBtn">💎 Prestige (1M coins)</button>
-    <button id="deleteBtn">❌ Delete Progress</button>
+    <button id="buyDrake" class="btn">Buy Drake (20)</button>
+    <button id="buyIngot" class="btn">Buy Ingot (1K)</button>
+    <button id="expandGrid" class="btn">Expand Grid</button>
+    <button id="saveGame" class="btn">Save Progress</button>
+    <button id="prestige" class="btn">Prestige (1M)</button>
+    <button id="deleteProgress" class="btn">❌ Delete Progress</button>
   </div>
 
-  <script>
-    let coins = 20;
-    let ingots = 0;
-    let gridSize = 3;
-    let drakeCost = 20;
-    let selectedDrake = null;
-    let coinMultiplier = 1;
+<script>
+/* ---------- Game state ---------- */
+let coins = 20;
+let ingots = 0;
+let gridSize = 3;
+let drakeCost = 20;
+let selectedDrake = null;
+let multiplier = 1; // prestige multiplier
 
-    const coinsDisplay = document.getElementById("coins");
-    const ingotsDisplay = document.getElementById("ingots");
-    const incomeDisplay = document.getElementById("income");
-    const multiplierDisplay = document.getElementById("multiplier");
-    const grid = document.getElementById("grid");
-    const buyBtn = document.getElementById("buyBtn");
+/* DOM refs */
+const game = document.getElementById('game');
+const coinsEl = document.getElementById('coins');
+const ingotsEl = document.getElementById('ingots');
+const incomeEl = document.getElementById('income');
+const multEl = document.getElementById('multiplier');
+const nextCostEl = document.getElementById('nextCost');
 
-    const drakeData = {
-      1: { income: 1,   img: "/lvl1drake.png" },
-      2: { income: 3,   img: "/lvl2drake.png" },
-      3: { income: 10,  img: "/lvl3drake.png" },
-      4: { income: 25,  img: "/lvl4drake.png" },
-      5: { income: 60,  img: "/lvl5drake.png" },
-      6: { income: 150, img: "/lvl6drake.png" },
-      7: { income: 400, img: "/lvl7drake.png" },
-      8: { income: 1000,img: "/lvl8drake.png" }
-    };
+const buyDrakeBtn = document.getElementById('buyDrake');
+const buyIngotBtn = document.getElementById('buyIngot');
+const expandGridBtn = document.getElementById('expandGrid');
+const saveBtn = document.getElementById('saveGame');
+const prestigeBtn = document.getElementById('prestige');
+const deleteBtn = document.getElementById('deleteProgress');
 
-    function formatNumber(num) {
-      if (num >= 1000000) {
-        return (num / 1000000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "M";
-      } else if (num >= 1000) {
-        return (num / 1000).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1") + "K";
-      } else {
-        return Math.floor(num).toString();
-      }
-    }
-
-    function createGrid(size) {
-      grid.innerHTML = "";
-      grid.style.gridTemplateColumns = `repeat(${size}, 80px)`;
-      for (let i = 0; i < size * size; i++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        grid.appendChild(cell);
-      }
-    }
-
-    function updateCoins() {
-      coinsDisplay.textContent = formatNumber(coins);
-      ingotsDisplay.textContent = formatNumber(ingots);
-    }
-
-    function updateIncome() {
-      let totalIncome = 0;
-      document.querySelectorAll(".drake img").forEach(drake => {
-        const level = drake.dataset.level;
-        totalIncome += drakeData[level].income;
-      });
-      incomeDisplay.textContent = `${formatNumber(totalIncome * coinMultiplier)} /sec`;
-    }
-
-    function updateBuyButton() {
-      buyBtn.textContent = `Buy Drake (${formatNumber(drakeCost)})`;
-    }
-
-    function spawnDrake(cell, level) {
-      if (!drakeData[level]) return; 
-      const container = document.createElement("div");
-      container.classList.add("drake");
-
-      const drake = document.createElement("img");
-      drake.dataset.level = level;
-      drake.src = drakeData[level].img;
-
-      const label = document.createElement("span");
-      label.textContent = `lvl${level} (+${drakeData[level].income}/s)`;
-
-      container.appendChild(drake);
-      container.appendChild(label);
-
-      container.addEventListener("click", () => handleDrakeClick(container));
-      cell.innerHTML = "";
-      cell.appendChild(container);
-
-      updateIncome();
-    }
-
-    function handleDrakeClick(container) {
-      if (!selectedDrake) {
-        selectedDrake = container;
-        container.classList.add("selected");
-      } else if (selectedDrake === container) {
-        container.classList.remove("selected");
-        selectedDrake = null;
-      } else {
-        const drake1 = selectedDrake.querySelector("img");
-        const drake2 = container.querySelector("img");
-
-        if (drake1.dataset.level === drake2.dataset.level) {
-          const newLevel = parseInt(drake1.dataset.level) + 1;
-          const cell1 = selectedDrake.parentElement;
-          const cell2 = container.parentElement;
-          cell1.innerHTML = "";
-          cell2.innerHTML = "";
-          spawnDrake(cell1, newLevel);
-          selectedDrake = null;
-        } else {
-          selectedDrake.classList.remove("selected");
-          selectedDrake = null;
-        }
-      }
-    }
-
-    // --- Buttons ---
-    buyBtn.addEventListener("click", () => {
-      const emptyCell = [...document.querySelectorAll(".cell")].find(cell => cell.children.length === 0);
-      if (!emptyCell) {
-        alert("No space left! Expand your grid first.");
-        return;
-      }
-
-      if (coins >= drakeCost) {
-        coins -= drakeCost;
-        spawnDrake(emptyCell, 1);
-        drakeCost = Math.floor(drakeCost * 1.25); // 25% increase
-        updateCoins();
-        updateBuyButton();
-      } else {
-        alert("Not enough coins!");
-      }
-    });
-
-    document.getElementById("ingotBtn").addEventListener("click", () => {
-      if (coins >= 1000) {
-        coins -= 1000;
-        ingots++;
-        updateCoins();
-      }
-    });
-
-    document.getElementById("expandBtn").addEventListener("click", () => {
-      const costs = { 3: { coins: 1000, ingots: 1, newSize: 4 },
-                      4: { coins: 10000, ingots: 5, newSize: 5 },
-                      5: { coins: 100000, ingots: 20, newSize: 6 }};
-      if (costs[gridSize] && coins >= costs[gridSize].coins && ingots >= costs[gridSize].ingots) {
-        coins -= costs[gridSize].coins;
-        ingots -= costs[gridSize].ingots;
-        gridSize = costs[gridSize].newSize;
-        createGrid(gridSize);
-        updateCoins();
-      }
-    });
-
-    document.getElementById("saveBtn").addEventListener("click", () => {
-      const saveData = {
-        coins, ingots, gridSize, drakeCost, coinMultiplier,
-        grid: [...document.querySelectorAll(".cell")].map(cell => {
-          const drake = cell.querySelector("img");
-          return drake ? drake.dataset.level : 0;
-        })
-      };
-      localStorage.setItem("fireDrakeSave", JSON.stringify(saveData));
-      alert("Progress saved!");
-    });
-
-    document.getElementById("prestigeBtn").addEventListener("click", () => {
-      if (coins >= 1000000) {
-        if (confirm("Prestige? You will reset everything but gain 2x multiplier!")) {
-          coins = 20;
-          ingots = 0;
-          gridSize = 3;
-          drakeCost = 20;
-          coinMultiplier *= 2;
-          multiplierDisplay.textContent = coinMultiplier + "x";
-          createGrid(gridSize);
-          updateCoins();
-          updateIncome();
-          updateBuyButton();
-        }
-      }
-    });
-
-    document.getElementById("deleteBtn").addEventListener("click", () => {
-      if (confirm("Are you sure you want to delete all progress? This cannot be undone!")) {
-        localStorage.removeItem("fireDrakeSave");
-        coins = 20;
-        ingots = 0;
-        gridSize = 3;
-        drakeCost = 20;
-        coinMultiplier = 1;
-        multiplierDisplay.textContent = "1x";
-        createGrid(gridSize);
-        updateCoins();
-        updateIncome();
-        updateBuyButton();
-        alert("All progress deleted. Starting fresh!");
-      }
-    });
-
-    setInterval(() => {
-      let totalIncome = 0;
-      document.querySelectorAll(".drake img").forEach(drake => {
-        const level = drake.dataset.level;
-        totalIncome += drakeData[level].income;
-      });
-      coins += totalIncome * coinMultiplier;
-      updateCoins();
-    }, 1000);
-
-    // --- Load game ---
-    window.onload = () => {
-      const saveData = JSON.parse(localStorage.getItem("fireDrakeSave"));
-      if (saveData) {
-        coins = saveData.coins;
-        ingots = saveData.ingots;
-        gridSize = saveData.gridSize;
-        drakeCost = saveData.drakeCost;
-        coinMultiplier = saveData.coinMultiplier || 1;
-        multiplierDisplay.textContent = coinMultiplier + "x";
-        createGrid(gridSize);
-        [...document.querySelectorAll(".cell")].forEach((cell, i) => {
-          if (saveData.grid[i] > 0) spawnDrake(cell, saveData.grid[i]);
-        });
-        updateCoins();
-        updateIncome();
-        updateBuyButton();
-      } else {
-        createGrid(gridSize);
-        updateCoins();
-        updateIncome();
-        updateBuyButton();
-      }
-    };
-  </script>
-</body>
-</html>
+/* ---------- Drake configuration (levels) ---------- */
+/* incomes are coins per second per drake level */
+const drakeData = {
+  1: { income: 1,   
