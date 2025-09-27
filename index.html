@@ -203,19 +203,26 @@ function unlockAuto(){
 
 function autoActions(){
   if(!autoUnlocked) return;
-  // auto buy until no money or space
+
+  // auto buy until no money or no space
   while(coins >= drakeCost && getEmptyCell()){
     buyDrake();
   }
-  // auto merge lvl1 pairs
-  let lvl1s = Array.from(document.querySelectorAll('.drake')).filter(d=>parseInt(d.dataset.level)===1);
-  while(lvl1s.length >= 2){
-    const c1 = lvl1s.pop().parentElement;
-    const c2 = lvl1s.pop().parentElement;
-    c1.querySelector('.drake').remove();
-    c2.querySelector('.drake').remove();
-    spawnDrakeInCell(c1,2);
-    lvl1s = Array.from(document.querySelectorAll('.drake')).filter(d=>parseInt(d.dataset.level)===1);
+
+  // auto merge levels 1–7
+  for(let lvl=1; lvl<=7; lvl++){
+    let sameLevel = Array.from(document.querySelectorAll('.drake'))
+      .filter(d => parseInt(d.dataset.level) === lvl);
+
+    while(sameLevel.length >= 2){
+      const c1 = sameLevel.pop().parentElement;
+      const c2 = sameLevel.pop().parentElement;
+      c1.querySelector('.drake').remove();
+      c2.querySelector('.drake').remove();
+      spawnDrakeInCell(c1, lvl+1);
+      sameLevel = Array.from(document.querySelectorAll('.drake'))
+        .filter(d => parseInt(d.dataset.level) === lvl);
+    }
   }
 }
 
