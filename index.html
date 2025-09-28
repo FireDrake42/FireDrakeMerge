@@ -38,7 +38,6 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
     .drake-img { width: 60px; height: 60px; }
     .lvl-label {
@@ -67,7 +66,6 @@
       transform: scale(1.05);
       box-shadow: 0 0 15px white;
     }
-    #autoMergeBtn { background: orange; color: black; }
     #saveBtn { background: limegreen; color: black; }
     #deleteBtn { background: crimson; color: white; }
     #prestigeBtn { background: cyan; color: black; }
@@ -86,8 +84,9 @@
     <button id="buyIngotBtn">Buy Ingot (1.00K)</button>
     <button id="expandBtn">Expand Grid (1.00K coins + 1 ingot)</button>
     <button id="saveBtn">Save Progress</button>
-    <button id="prestigeBtn">Prestige (10K coins)</button>
-    <button id="autoMergeBtn">Auto Merge: OFF</button>
+    <button id="prestigeBtn">Prestige (10.00M coins)</button>
+    <button id="autoBuyBtn">Buy Auto Buy (1.00M coins)</button>
+    <button id="autoMergeBtn">Buy Auto Merge (1.00M coins)</button>
     <button id="deleteBtn">Delete Progress</button>
   </div>
 
@@ -99,9 +98,10 @@
     let drakeCost = 20;
     let gridSize = 3;
     let multiplier = 1;
-    let autoBuy = true;
-    let autoPrestige = true;
-    let autoMerge = false; // toggle
+
+    let autoBuyUnlocked = false;
+    let autoMergeUnlocked = false;
+
     let selectedDrake = null;
 
     const gridEl = document.getElementById("grid");
@@ -112,6 +112,7 @@
     const buyDrakeBtn = document.getElementById("buyDrakeBtn");
     const expandBtn = document.getElementById("expandBtn");
     const prestigeBtn = document.getElementById("prestigeBtn");
+    const autoBuyBtn = document.getElementById("autoBuyBtn");
     const autoMergeBtn = document.getElementById("autoMergeBtn");
 
     const drakeStats = {
@@ -134,8 +135,8 @@
     }
 
     function createGrid(size) {
-      gridEl.style.gridTemplateColumns = `repeat(${size}, var(--cell-size))`;
-      gridEl.style.gridTemplateRows = `repeat(${size}, var(--cell-size))`;
+      gridEl.style.gridTemplateColumns = `repeat(${size}, 90px)`;
+      gridEl.style.gridTemplateRows = `repeat(${size}, 90px)`;
       gridEl.innerHTML = "";
       for (let i = 0; i < size * size; i++) {
         const cell = document.createElement("div");
@@ -182,7 +183,6 @@
       incomeEl.textContent = formatNumber(getTotalIncome()) + "/sec";
       multEl.textContent = formatNumber(multiplier) + "x";
       buyDrakeBtn.textContent = "Buy Drake (" + formatNumber(drakeCost) + ")";
-      autoMergeBtn.textContent = "Auto Merge: " + (autoMerge ? "ON" : "OFF");
     }
 
     function getTotalIncome() {
@@ -195,9 +195,8 @@
 
     function gameLoop() {
       coins += getTotalIncome();
-      if (autoBuy && coins >= drakeCost && getEmptyCell()) buyDrake();
-      if (autoPrestige && coins >= 10000) prestige();
-      if (autoMerge) autoMergeDrakes();
+      if (autoBuyUnlocked && coins >= drakeCost && getEmptyCell()) buyDrake();
+      if (autoMergeUnlocked) autoMergeDrakes();
       updateUI();
     }
 
@@ -206,7 +205,7 @@
       if (!cell || coins < drakeCost) return;
       coins -= drakeCost;
       spawnDrakeInCell(cell, 1);
-      drakeCost = Math.floor(drakeCost * 1.01);
+      drakeCost = Math.floor(drakeCost * 1.15); // 15% increase
       updateUI();
     }
 
@@ -221,12 +220,14 @@
     }
 
     function prestige() {
-      if (coins < 10000) return;
+      if (coins < 1e7) return; // 10M
       multiplier *= 2;
       coins = 20;
       ingots = 0;
       gridSize = 3;
       drakeCost = 20;
+      autoBuyUnlocked = false;
+      autoMergeUnlocked = false;
       createGrid(gridSize);
       updateUI();
     }
@@ -251,13 +252,27 @@
     buyDrakeBtn.onclick = buyDrake;
     expandBtn.onclick = expandGrid;
     prestigeBtn.onclick = prestige;
-    autoMergeBtn.onclick = () => { autoMerge = !autoMerge; updateUI(); };
+    autoBuyBtn.onclick = () => {
+      if (!autoBuyUnlocked && coins >= 1e6) {
+        coins -= 1e6;
+        autoBuyUnlocked = true;
+        autoBuyBtn.textContent = "Auto Buy: UNLOCKED";
+      }
+    };
+    autoMergeBtn.onclick = () => {
+      if (!autoMergeUnlocked && coins >= 1e6) {
+        coins -= 1e6;
+        autoMergeUnlocked = true;
+        autoMergeBtn.textContent = "Auto Merge: UNLOCKED";
+      }
+    };
     document.getElementById("buyIngotBtn").onclick = () => {
       if (coins >= 1000) { coins -= 1000; ingots++; updateUI(); }
     };
     document.getElementById("saveBtn").onclick = () => {
       const state = {
         coins, ingots, gridSize, drakeCost, multiplier,
+        autoBuyUnlocked, autoMergeUnlocked,
         drakes: Array.from(document.querySelectorAll(".cell")).map(c =>
           c.querySelector(".drake") ? parseInt(c.querySelector(".drake").dataset.level) : 0
         )
@@ -279,10 +294,14 @@
       gridSize = state.gridSize;
       drakeCost = state.drakeCost;
       multiplier = state.multiplier;
+      autoBuyUnlocked = state.autoBuyUnlocked;
+      autoMergeUnlocked = state.autoMergeUnlocked;
       createGrid(gridSize);
       state.drakes.forEach((lvl, i) => {
         if (lvl > 0) spawnDrakeInCell(document.querySelectorAll(".cell")[i], lvl);
       });
+      if (autoBuyUnlocked) autoBuyBtn.textContent = "Auto Buy: UNLOCKED";
+      if (autoMergeUnlocked) autoMergeBtn.textContent = "Auto Merge: UNLOCKED";
       updateUI();
     }
 
