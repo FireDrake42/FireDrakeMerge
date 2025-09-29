@@ -49,24 +49,39 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       margin: 20px 0;
     }
     button {
-      padding: 10px 15px;
-      font-size: 16px;
+      padding: 12px 20px;
+      font-size: 18px;
+      font-weight: bold;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
-      background: #222;
       color: white;
-      transition: 0.2s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+      transition: transform 0.15s, box-shadow 0.15s;
     }
-    button:hover { background: #444; }
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.7);
+    }
+    #buyDrake { background: #e67e22; }
+    #buyIngot { background: #f1c40f; color: black; }
+    #expandGrid { background: #9b59b6; }
+    #prestige { background: #c0392b; }
+    #save { background: #2980b9; }
+    #delete { background: #7f8c8d; }
+    #autoUnlock { background: #16a085; }
+    #toggleAutoBuy { background: #27ae60; }
+    #toggleAutoMerge { background: #8e44ad; }
     button:disabled {
-      background: #555;
-      color: #999;
+      background: #555 !important;
+      color: #999 !important;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
   </style>
 </head>
