@@ -38,6 +38,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
     }
     .drake-img { width: 60px; height: 60px; }
     .lvl-label {
@@ -54,271 +55,252 @@
     }
     button {
       padding: 12px 20px;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       cursor: pointer;
+      background: #ff4444;
       color: white;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      transition: transform 0.1s, background 0.2s;
     }
     button:hover {
+      background: #ff6666;
       transform: scale(1.05);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.7);
     }
-    #buyDrake { background: #e67e22; }
-    #buyIngot { background: #f1c40f; color: black; }
-    #expandGrid { background: #9b59b6; }
-    #prestige { background: #c0392b; }
-    #save { background: #2980b9; }
-    #delete { background: #7f8c8d; }
-    #autoUnlock { background: #16a085; }
-    #toggleAutoBuy { background: #27ae60; }
-    #toggleAutoMerge { background: #8e44ad; }
     button:disabled {
-      background: #555 !important;
-      color: #999 !important;
+      background: #444;
+      color: #aaa;
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
     }
+    .toggle.on { background: #44aa44; }
   </style>
 </head>
 <body>
   <div id="stats">
     Coins: <span id="coins">20</span> |
     Ingots: <span id="ingots">0</span> |
-    Income: <span id="income">0</span>/sec |
+    Income: <span id="income">0 /sec</span> |
     Mult: <span id="mult">1x</span>
   </div>
+
   <div id="grid"></div>
 
   <div id="buttons">
-    <button id="buyDrake">Buy Drake (20 Coins)</button>
-    <button id="buyIngot">Buy Ingot (1K Coins)</button>
-    <button id="expandGrid">Expand Grid (1 Ingots)</button>
-    <button id="prestige">Prestige (10M Coins)</button>
-    <button id="save">Save Progress</button>
-    <button id="delete">Delete Progress</button>
-    <button id="autoUnlock">Unlock Auto (1M Coins)</button>
+    <button id="buyDrakeBtn">Buy Drake (20 Coins)</button>
+    <button id="buyIngotBtn">Buy Ingot (1K Coins)</button>
+    <button id="expandBtn">Expand Grid (1 Ingots)</button>
+    <button id="autoBtn">Unlock Auto Buy+Merge (1M Coins)</button>
     <button id="toggleAutoBuy" disabled>Auto Buy: OFF</button>
     <button id="toggleAutoMerge" disabled>Auto Merge: OFF</button>
+    <button id="prestigeBtn">Prestige (10M Coins)</button>
+    <button id="saveBtn">Save Progress</button>
+    <button id="deleteBtn">Delete Progress</button>
   </div>
 
-<script>
-let coins = 20;
-let ingots = 0;
-let income = 0;
-let mult = 1;
-let drakeCost = 20;
-let gridSize = 3;
-let gridExpandCost = 1;
-let selectedCell = null;
+  <script>
+    let coins = 20;
+    let ingots = 0;
+    let incomePerSec = 0;
+    let multiplier = 1;
+    let gridSize = 3;
+    let drakeCost = 20;
+    let expandCost = 1;
+    let autoUnlocked = false;
+    let autoBuyOn = false;
+    let autoMergeOn = false;
+    let selectedCell = null;
 
-let autoUnlocked = false;
-let autoBuyOn = false;
-let autoMergeOn = false;
-
-const coinSpan = document.getElementById("coins");
-const ingotSpan = document.getElementById("ingots");
-const incomeSpan = document.getElementById("income");
-const multSpan = document.getElementById("mult");
-const grid = document.getElementById("grid");
-
-function formatNumber(n){
-  if (n >= 1e12) return (n/1e12).toFixed(2)+"T";
-  if (n >= 1e9) return (n/1e9).toFixed(2)+"B";
-  if (n >= 1e6) return (n/1e6).toFixed(2)+"M";
-  if (n >= 1e3) return (n/1e3).toFixed(2)+"K";
-  return Math.floor(n);
-}
-
-function createGrid(size){
-  grid.innerHTML="";
-  grid.style.gridTemplateColumns=`repeat(${size},90px)`;
-  grid.style.gridTemplateRows=`repeat(${size},90px)`;
-  for(let i=0;i<size*size;i++){
-    let cell=document.createElement("div");
-    cell.className="cell";
-    cell.dataset.index=i;
-    cell.onclick=()=>selectCell(cell);
-    grid.appendChild(cell);
-  }
-}
-
-function selectCell(cell){
-  if(!cell.dataset.level) return;
-  if(!selectedCell){
-    selectedCell=cell;
-    cell.style.border="2px solid cyan";
-  } else {
-    if(cell!==selectedCell && cell.dataset.level===selectedCell.dataset.level){
-      mergeDrakes(selectedCell,cell);
+    function formatNumber(num) {
+      if(num>=1e12) return (num/1e12).toFixed(2)+"T";
+      if(num>=1e9) return (num/1e9).toFixed(2)+"B";
+      if(num>=1e6) return (num/1e6).toFixed(2)+"M";
+      if(num>=1e3) return (num/1e3).toFixed(2)+"K";
+      return Math.floor(num);
     }
-    selectedCell.style.border="2px solid white";
-    selectedCell=null;
-  }
-}
 
-function mergeDrakes(c1,c2){
-  let lvl=parseInt(c1.dataset.level);
-  let newLvl=lvl+1;
-  c1.innerHTML=`<img src="lvl${newLvl}drake.png" class="drake-img"><div class="lvl-label">Lvl ${newLvl}</div>`;
-  c1.dataset.level=newLvl;
-  c2.innerHTML="";
-  delete c2.dataset.level;
-  updateIncome();
-}
-
-function placeDrake(level=1){
-  let empty=[...document.querySelectorAll(".cell")].filter(c=>!c.dataset.level);
-  if(empty.length===0) return false;
-  let cell=empty[Math.floor(Math.random()*empty.length)];
-  cell.innerHTML=`<img src="lvl${level}drake.png" class="drake-img"><div class="lvl-label">Lvl ${level}</div>`;
-  cell.dataset.level=level;
-  updateIncome();
-  return true;
-}
-
-function updateIncome(){
-  let total=0;
-  document.querySelectorAll(".cell").forEach(c=>{
-    if(c.dataset.level){
-      let lvl=parseInt(c.dataset.level);
-      if(lvl===1) total+=1;
-      else if(lvl===2) total+=3;
-      else if(lvl===3) total+=10;
-      else if(lvl===4) total+=25;
-      else if(lvl===5) total+=60;
-      else if(lvl===6) total+=150;
-      else if(lvl===7) total+=500;
-      else if(lvl>=8) total+=1000;
-    }
-  });
-  income=total*mult;
-  incomeSpan.textContent=formatNumber(income)+"/sec";
-}
-
-function expandGrid(){
-  if(ingots>=gridExpandCost && gridSize<6){
-    ingots-=gridExpandCost;
-    gridSize++;
-    gridExpandCost*=10;
-    createGrid(gridSize);
-    updateUI();
-  }
-}
-
-function prestige(){
-  if(coins>=1e7){
-    coins=0;
-    drakeCost=20;
-    gridSize=3;
-    mult*=2;
-    createGrid(gridSize);
-    updateIncome();
-    updateUI();
-  }
-}
-
-function updateUI(){
-  coinSpan.textContent=formatNumber(coins);
-  ingotSpan.textContent=formatNumber(ingots);
-  multSpan.textContent=mult+"x";
-  document.getElementById("buyDrake").textContent=`Buy Drake (${formatNumber(drakeCost)} Coins)`;
-  document.getElementById("expandGrid").textContent=`Expand Grid (${formatNumber(gridExpandCost)} Ingots)`;
-}
-
-document.getElementById("buyDrake").onclick=()=>{
-  if(coins>=drakeCost){
-    coins-=drakeCost;
-    placeDrake(1);
-    drakeCost=Math.floor(drakeCost*1.15);
-    updateUI();
-  }
-};
-
-document.getElementById("buyIngot").onclick=()=>{
-  if(coins>=1000){
-    coins-=1000;
-    ingots++;
-    updateUI();
-  }
-};
-
-document.getElementById("expandGrid").onclick=expandGrid;
-document.getElementById("prestige").onclick=prestige;
-
-document.getElementById("save").onclick=()=>{
-  let saveData={coins,ingots,mult,drakeCost,gridSize,gridExpandCost};
-  localStorage.setItem("drakeSave",JSON.stringify(saveData));
-};
-
-document.getElementById("delete").onclick=()=>{
-  localStorage.removeItem("drakeSave");
-  location.reload();
-};
-
-document.getElementById("autoUnlock").onclick=()=>{
-  if(coins>=1e6 && !autoUnlocked){
-    coins-=1e6;
-    autoUnlocked=true;
-    document.getElementById("toggleAutoBuy").disabled=false;
-    document.getElementById("toggleAutoMerge").disabled=false;
-    updateUI();
-  }
-};
-
-document.getElementById("toggleAutoBuy").onclick=()=>{
-  if(autoUnlocked){
-    autoBuyOn=!autoBuyOn;
-    document.getElementById("toggleAutoBuy").textContent="Auto Buy: "+(autoBuyOn?"ON":"OFF");
-  }
-};
-
-document.getElementById("toggleAutoMerge").onclick=()=>{
-  if(autoUnlocked){
-    autoMergeOn=!autoMergeOn;
-    document.getElementById("toggleAutoMerge").textContent="Auto Merge: "+(autoMergeOn?"ON":"OFF");
-  }
-};
-
-setInterval(()=>{
-  coins+=income;
-  updateUI();
-
-  if(autoBuyOn) document.getElementById("buyDrake").click();
-
-  if(autoMergeOn){
-    let merged=true;
-    while(merged){
-      merged=false;
-      let cells=[...document.querySelectorAll(".cell")];
-      for(let i=0;i<cells.length;i++){
-        for(let j=i+1;j<cells.length;j++){
-          if(cells[i].dataset.level && cells[i].dataset.level===cells[j].dataset.level){
-            mergeDrakes(cells[i],cells[j]);
-            merged=true;
-            break;
-          }
-        }
-        if(merged) break;
+    function createGrid(size){
+      const grid=document.getElementById("grid");
+      grid.innerHTML="";
+      grid.style.gridTemplateColumns=`repeat(${size},90px)`;
+      grid.style.gridTemplateRows=`repeat(${size},90px)`;
+      for(let i=0;i<size*size;i++){
+        const cell=document.createElement("div");
+        cell.className="cell";
+        cell.dataset.index=i;
+        cell.onclick=()=>selectCell(cell);
+        grid.appendChild(cell);
       }
     }
-  }
-},1000);
 
-let save=localStorage.getItem("drakeSave");
-if(save){
-  let data=JSON.parse(save);
-  coins=data.coins; ingots=data.ingots; mult=data.mult;
-  drakeCost=data.drakeCost; gridSize=data.gridSize;
-  gridExpandCost=data.gridExpandCost;
-}
-createGrid(gridSize);
-updateIncome();
-updateUI();
-</script>
+    function updateStats(){
+      document.getElementById("coins").textContent=formatNumber(coins);
+      document.getElementById("ingots").textContent=formatNumber(ingots);
+      document.getElementById("income").textContent=formatNumber(incomePerSec)+" /sec";
+      document.getElementById("mult").textContent=multiplier+"x";
+      document.getElementById("buyDrakeBtn").textContent=`Buy Drake (${formatNumber(drakeCost)} Coins)`;
+      document.getElementById("expandBtn").textContent=`Expand Grid (${formatNumber(expandCost)} Ingots)`;
+    }
+
+    function updateIncome(){
+      let total=0;
+      document.querySelectorAll(".cell").forEach(c=>{
+        if(c.dataset.level){
+          let lvl=parseInt(c.dataset.level);
+          if(lvl===1) total+=1;
+          else if(lvl===2) total+=3;
+          else if(lvl===3) total+=10;
+          else if(lvl===4) total+=25;
+          else if(lvl===5) total+=60;
+          else if(lvl===6) total+=150;
+          else if(lvl===7) total+=500;
+          else if(lvl>=8) total+=1000;
+        }
+      });
+      incomePerSec=total*multiplier;
+      updateStats();
+    }
+
+    function buyDrake(){
+      if(coins>=drakeCost){
+        let empty=[...document.querySelectorAll(".cell")].filter(c=>!c.dataset.level);
+        if(empty.length===0) return;
+        coins-=drakeCost;
+        drakeCost=Math.floor(drakeCost*1.15);
+        let cell=empty[Math.floor(Math.random()*empty.length)];
+        placeDrake(cell,1);
+        updateIncome();
+      }
+    }
+
+    function placeDrake(cell,lvl){
+      cell.innerHTML=`<img src="lvl${lvl}drake.png" class="drake-img"><div class="lvl-label">Lvl ${lvl}</div>`;
+      cell.dataset.level=lvl;
+    }
+
+    function selectCell(cell){
+      if(!cell.dataset.level) return;
+      if(!selectedCell){
+        selectedCell=cell;
+        cell.style.border="3px solid yellow";
+      } else {
+        if(cell!==selectedCell && cell.dataset.level===selectedCell.dataset.level){
+          let newLvl=parseInt(cell.dataset.level)+1;
+          placeDrake(cell,newLvl);
+          selectedCell.innerHTML="";
+          delete selectedCell.dataset.level;
+        }
+        selectedCell.style.border="2px solid #fff";
+        selectedCell=null;
+        updateIncome();
+      }
+    }
+
+    function expandGrid(){
+      if(ingots>=expandCost && gridSize<6){
+        ingots-=expandCost;
+        expandCost*=10;
+        gridSize++;
+        let saved=Array.from(document.querySelectorAll(".cell")).map(c=>c.dataset.level?parseInt(c.dataset.level):0);
+        createGrid(gridSize);
+        saved.forEach((lvl,i)=>{ if(lvl>0 && i<gridSize*gridSize){ placeDrake(document.querySelectorAll(".cell")[i],lvl); }});
+        updateIncome();
+      }
+    }
+
+    function prestige(){
+      if(coins>=1e7){
+        coins=20; ingots=0; drakeCost=20; expandCost=1; gridSize=3;
+        multiplier*=2;
+        createGrid(gridSize);
+        updateIncome();
+      }
+    }
+
+    function save(){
+      let saveData={coins,ingots,drakeCost,expandCost,gridSize,multiplier,autoUnlocked,
+        grid:Array.from(document.querySelectorAll(".cell")).map(c=>c.dataset.level?parseInt(c.dataset.level):0)};
+      localStorage.setItem("fireDrakeSave",JSON.stringify(saveData));
+    }
+
+    function load(){
+      let data=localStorage.getItem("fireDrakeSave");
+      if(data){
+        let s=JSON.parse(data);
+        coins=s.coins; ingots=s.ingots; drakeCost=s.drakeCost; expandCost=s.expandCost; gridSize=s.gridSize; multiplier=s.multiplier; autoUnlocked=s.autoUnlocked;
+        createGrid(gridSize);
+        s.grid.forEach((lvl,i)=>{ if(lvl>0) placeDrake(document.querySelectorAll(".cell")[i],lvl); });
+        if(autoUnlocked){
+          document.getElementById("toggleAutoBuy").disabled=false;
+          document.getElementById("toggleAutoMerge").disabled=false;
+        }
+        updateIncome();
+      } else createGrid(gridSize);
+    }
+
+    function deleteProgress(){ localStorage.removeItem("fireDrakeSave"); location.reload(); }
+
+    function buyIngot(){
+      if(coins>=1000){ coins-=1000; ingots++; updateStats(); }
+    }
+
+    function unlockAuto(){
+      if(coins>=1e6 && !autoUnlocked){
+        coins-=1e6; autoUnlocked=true;
+        document.getElementById("toggleAutoBuy").disabled=false;
+        document.getElementById("toggleAutoMerge").disabled=false;
+        updateStats();
+      }
+    }
+
+    function toggleAutoBuy(){
+      if(autoUnlocked){ autoBuyOn=!autoBuyOn;
+        document.getElementById("toggleAutoBuy").textContent="Auto Buy: "+(autoBuyOn?"ON":"OFF");
+        document.getElementById("toggleAutoBuy").classList.toggle("on",autoBuyOn);
+      }
+    }
+
+    function toggleAutoMerge(){
+      if(autoUnlocked){ autoMergeOn=!autoMergeOn;
+        document.getElementById("toggleAutoMerge").textContent="Auto Merge: "+(autoMergeOn?"ON":"OFF");
+        document.getElementById("toggleAutoMerge").classList.toggle("on",autoMergeOn);
+      }
+    }
+
+    // Passive income loop
+    setInterval(()=>{ coins+=incomePerSec; updateStats(); },1000);
+
+    // Auto features loop
+    setInterval(()=>{
+      if(autoBuyOn) buyDrake();
+      if(autoMergeOn){
+        let cells=document.querySelectorAll(".cell");
+        for(let lvl=1;lvl<=7;lvl++){
+          let arr=[...cells].filter(c=>c.dataset.level==lvl);
+          while(arr.length>=2){
+            let a=arr.pop(), b=arr.pop();
+            placeDrake(a,lvl+1); b.innerHTML=""; delete b.dataset.level;
+          }
+        }
+        updateIncome();
+      }
+    },1000);
+
+    // Button bindings
+    document.getElementById("buyDrakeBtn").onclick=buyDrake;
+    document.getElementById("buyIngotBtn").onclick=buyIngot;
+    document.getElementById("expandBtn").onclick=expandGrid;
+    document.getElementById("prestigeBtn").onclick=prestige;
+    document.getElementById("saveBtn").onclick=save;
+    document.getElementById("deleteBtn").onclick=deleteProgress;
+    document.getElementById("autoBtn").onclick=unlockAuto;
+    document.getElementById("toggleAutoBuy").onclick=toggleAutoBuy;
+    document.getElementById("toggleAutoMerge").onclick=toggleAutoMerge;
+
+    load();
+  </script>
 </body>
 </html>
